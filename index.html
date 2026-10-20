@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batik Arizi - Content Creator Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            gold: '#D4AF37',
+                            goldLight: '#F3E5AB',
+                            darkBg: '#0F172A',
+                            cardBg: '#1E293B',
+                            accent: '#3B82F6',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- html2pdf.js for exporting reports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0B0F19;
+            color: #F8FAFC;
+        }
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0F172A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100 flex justify-center items-start sm:py-6">
+
+    <div id="app-container" class="w-full max-w-md min-h-screen sm:min-h-[844px] sm:max-h-[900px] bg-slate-900 sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-800 relative">
+        
+        <!-- TOP APP BAR -->
+        <header class="bg-slate-900/80 backdrop-blur-md px-5 py-4 border-b border-slate-800 flex justify-between items-center sticky top-0 z-20">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-slate-950 font-bold shadow-lg shadow-amber-500/20">
+                    <i class="fa-solid fa-shirt text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm text-slate-100 tracking-wide">BATIK ARIZI</h1>
+                    <p class="text-[10px] text-amber-400/90 font-medium tracking-wider">CREATOR HUB</p>
+                </div>
+            </div>
+            <div id="header-user-actions" class="hidden flex items-center gap-2">
+                <span id="current-user-badge" class="text-xs px-2.5 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-300 max-w-[120px] truncate"></span>
+                <button onclick="handleLogout()" class="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center justify-center transition" title="Keluar">
+                    <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN VIEW CONTAINER -->
+        <main class="flex-1 overflow-y-auto px-4 py-5 space-y-6 pb-24" id="main-content">
+            
+            <!-- AUTH VIEW (LOGIN WITH DROPDOWN / REGISTER) -->
+            <section id="auth-view" class="space-y-5 my-auto py-4">
+                <div class="text-center space-y-2 mb-6">
+                    <div class="inline-flex p-3 rounded-2xl bg-amber-500/10 text-amber-400 mb-2 border border-amber-500/20">
+                        <i class="fa-solid fa-video text-2xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-100" id="auth-title">Masuk Kreator</h2>
+                    <p class="text-xs text-slate-400" id="auth-subtitle">Pilih nama akun Anda dari dropdown dan masukkan password</p>
+                </div>
+
+                <!-- LOGIN FORM -->
+                <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Pilih Nama Kreator</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-user-tag absolute left-3.5 top-3.5 text-xs text-slate-500 z-10"></i>
+                            <select id="login-user-select" required class="w-full bg-slate-800/80 border border-slate-700 rounded-xl py-2.5 pl-10 pr-8 text-xs text-slate-100 focus:outline-none focus:border-amber-400 transition appearance-none cursor-pointer">
+                                <option value="" disabled selected>Memuat daftar kreator...</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-3.5 top-3.5 text-xs text-slate-500 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Password</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-xs text-slate-500"></i>
+                            <input type="password" id="login-password" required class="w-full bg-slate-800/80 border border-slate-700 rounded-xl py-2.5 pl-10 pr-3 text-xs text-slate-100 focus:outline-none focus:border-amber-400 transition" placeholder="••••••••">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold rounded-xl text-xs shadow-lg shadow-amber-500/20 hover:opacity-95 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket"></i> Masuk Sekarang
+                    </button>
+                </form>
+
+                <!-- REGISTER FORM -->
+                <form id="register-form" onsubmit="handleRegister(event)" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">PIN Pendaftaran Admin <span class="text-amber-400">*</span></label>
+                        <input type="password" id="reg-admin-pin" required placeholder="Masukkan PIN verifikasi admin" class="w-full bg-slate-800/80 border border-amber-500/40 rounded-xl py-2.5 px-3 text-xs text-amber-300 focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Nama Lengkap</label>
+                        <input type="text" id="reg-name" required placeholder="Nama Kreator" class="w-full bg-slate-800/80 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Tanggal Lahir</label>
+                            <input type="date" id="reg-dob" required class="w-full bg-slate-800/80 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">No WhatsApp</label>
+                            <input type="tel" id="reg-phone" required placeholder="08123456789" class="w-full bg-slate-800/80 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Alamat Domisili</label>
+                        <textarea id="reg-address" rows="2" required placeholder="Alamat lengkap" class="w-full bg-slate-800/80 border border-slate-700 rounded-xl py-2 px-3 text-xs text-slate-100 focus:outline-none focus:border-amber-400"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Email Login</label>
+                        <input type="email" id="reg-email" required placeholder="email@domain.com" class="w-full bg-slate-800/80 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Password Login</label>
+                        <input type="password" id="reg-password" minlength="6" required placeholder="Minimal 6 karakter" class="w-full bg-slate-800/80 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold rounded-xl text-xs shadow-lg shadow-amber-500/20 hover:opacity-95 transition mt-2 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i> Daftar Kreator Baru
+                    </button>
+                </form>
+
+                <div class="pt-3 border-t border-slate-800 flex justify-between items-center text-xs">
+                    <button type="button" onclick="toggleAuthMode()" id="toggle-auth-btn" class="text-amber-400 hover:underline">
+                        Belum punya akun? Daftar
+                    </button>
+                    <button type="button" onclick="openAdminModal()" class="text-slate-400 hover:text-slate-200 flex items-center gap-1">
+                        <i class="fa-solid fa-shield-halved"></i> Admin Login
+                    </button>
+                </div>
+            </section>
+
+            <!-- CREATOR DASHBOARD VIEW -->
+            <section id="creator-view" class="space-y-5 hidden">
+                <!-- Daily Progress Card -->
+                <div class="bg-gradient-to-br from-slate-800/90 to-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] text-amber-400 font-semibold uppercase tracking-wider">Target Harian Hari Ini</span>
+                            <h3 class="text-lg font-bold text-slate-100" id="today-date-text">--</h3>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xl font-extrabold text-amber-400" id="today-count">0</span>
+                            <span class="text-xs text-slate-400">/ 8 Video</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
+                        <div id="today-progress-bar" class="bg-gradient-to-r from-amber-500 to-yellow-300 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <div id="target-status-msg" class="text-[11px] text-slate-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info text-amber-400"></i> Minimum target 8 video per hari.
+                    </div>
+                </div>
+
+                <!-- Input Link Video Form -->
+                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-amber-400"></i> Lapor Link Video Baru
+                    </h3>
+                    <form onsubmit="handleAddContent(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">Tanggal Upload / Laporan</label>
+                            <input type="date" id="content-date" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1">Link Video Konten</label>
+                            <input type="url" id="content-link" required placeholder="https://vt.tiktok.com/... atau link video" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border border-slate-800">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-basket-shopping text-amber-400 text-sm"></i>
+                                <span class="text-xs text-slate-200 font-medium">Keranjang Kuning</span>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="content-cart-toggle" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                            </label>
+                        </div>
+                        <button type="submit" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> Simpan & Kirim
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Summary Cards Section -->
+                <div class="space-y-3">
+                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Ringkasan Performa</h3>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <!-- Mingguan Card -->
+                        <div class="bg-slate-800/50 border border-slate-700/50 p-3 rounded-2xl space-y-1">
+                            <span class="text-[10px] text-slate-400 font-semibold block">Minggu Ini</span>
+                            <div class="text-lg font-bold text-amber-400" id="weekly-count">0 Video</div>
+                            <div class="text-[10px] text-slate-400">Rata2 Ketepatan: <span id="weekly-acc" class="text-slate-200 font-semibold">0%</span></div>
+                            <p class="text-[9px] text-slate-500 truncate" id="weekly-range">--</p>
+                        </div>
+
+                        <!-- Bulanan Card -->
+                        <div class="bg-slate-800/50 border border-slate-700/50 p-3 rounded-2xl space-y-1">
+                            <span class="text-[10px] text-slate-400 font-semibold block">Bulan Ini</span>
+                            <div class="text-lg font-bold text-emerald-400" id="monthly-count">0 Video</div>
+                            <div class="text-[10px] text-slate-400">Rata2 Ketepatan: <span id="monthly-acc" class="text-slate-200 font-semibold">0%</span></div>
+                            <p class="text-[9px] text-slate-500 truncate" id="monthly-range">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter & History Section -->
+                <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-4 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Riwayat Konten Saya</h3>
+                        <button onclick="exportPdfReport()" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-[11px] font-medium rounded-lg transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-pdf text-red-400"></i> Export PDF
+                        </button>
+                    </div>
+
+                    <!-- Filter Rentang Tanggal -->
+                    <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2 rounded-xl border border-slate-800">
+                        <div>
+                            <label class="block text-[9px] text-slate-400">Tgl Mulai</label>
+                            <input type="date" id="filter-start" onchange="renderCreatorHistory()" class="w-full bg-slate-800 text-[11px] text-slate-200 px-2 py-1 rounded border border-slate-700">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] text-slate-400">Tgl Akhir</label>
+                            <input type="date" id="filter-end" onchange="renderCreatorHistory()" class="w-full bg-slate-800 text-[11px] text-slate-200 px-2 py-1 rounded border border-slate-700">
+                        </div>
+                    </div>
+
+                    <!-- Content List -->
+                    <div id="creator-history-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        <!-- Content items dynamically rendered -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ADMIN PANEL VIEW -->
+            <section id="admin-view" class="space-y-5 hidden">
+                <div class="bg-amber-500/10 border border-amber-500/30 p-3.5 rounded-2xl flex justify-between items-center">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-bold text-amber-300">ADMINISTRATOR PANEL</h3>
+                            <p class="text-[10px] text-slate-400">Wewenang Penuh Sistem</p>
+                        </div>
+                    </div>
+                    <button onclick="exitAdminView()" class="text-xs text-slate-400 hover:text-slate-100 bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700">Keluar Admin</button>
+                </div>
+
+                <!-- TAB SWITCHER -->
+                <div class="flex border-b border-slate-800">
+                    <button onclick="switchAdminTab('users')" id="tab-users-btn" class="flex-1 py-2 text-center text-xs font-semibold text-amber-400 border-b-2 border-amber-400">
+                        Data Users
+                    </button>
+                    <button onclick="switchAdminTab('contents')" id="tab-contents-btn" class="flex-1 py-2 text-center text-xs font-semibold text-slate-400 border-b-2 border-transparent">
+                        Semua Konten
+                    </button>
+                    <button onclick="switchAdminTab('gas')" id="tab-gas-btn" class="flex-1 py-2 text-center text-xs font-semibold text-slate-400 border-b-2 border-transparent">
+                        Kode GAS Apps
+                    </button>
+                </div>
+
+                <!-- ADMIN TAB CONTENT: USERS -->
+                <div id="admin-tab-users" class="space-y-3">
+                    <h4 class="text-xs font-bold text-slate-300">Daftar Konten Kreator Terdaftar</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-[11px] text-slate-300">
+                            <thead class="bg-slate-800/80 text-amber-400 uppercase text-[9px]">
+                                <tr>
+                                    <th class="p-2">Nama</th>
+                                    <th class="p-2">Email</th>
+                                    <th class="p-2">No WA</th>
+                                    <th class="p-2">Alamat</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-table" class="divide-y divide-slate-800">
+                                <!-- Users list populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ADMIN TAB CONTENT: ALL CONTENTS -->
+                <div id="admin-tab-contents" class="space-y-3 hidden">
+                    <h4 class="text-xs font-bold text-slate-300">Rekap Seluruh Konten Kreator</h4>
+                    <div class="max-h-72 overflow-y-auto space-y-2" id="admin-contents-list">
+                        <!-- All contents listed dynamically -->
+                    </div>
+                </div>
+
+                <!-- ADMIN TAB CONTENT: GOOGLE APPS SCRIPT CODE -->
+                <div id="admin-tab-gas" class="space-y-3 hidden">
+                    <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700 text-xs text-slate-300 space-y-2">
+                        <p class="font-semibold text-amber-400"><i class="fa-solid fa-code"></i> Instructions Google Apps Script (GAS):</p>
+                        <ol class="list-decimal list-inside text-[11px] space-y-1 text-slate-400">
+                            <li>Buka Google Spreadsheet Batik Arizi Anda: <a href="https://docs.google.com/spreadsheets/d/15nhvuetas7kx5Ix6uOO-Rj3EcKaK8qwh9SGNZKDdYps/edit?usp=sharing" target="_blank" class="text-amber-400 underline">Buka Spreadsheet</a>.</li>
+                            <li>Klik menu <b class="text-slate-200">Ekstensi > Apps Script</b>.</li>
+                            <li>Paste kode dibawah ke dalam file <b class="text-slate-200">Code.gs</b>.</li>
+                            <li>Klik <b class="text-slate-200">Deploy > New Deployment > Web app</b>.</li>
+                            <li>Atur <b class="text-slate-200">Who has access</b> ke <b class="text-amber-400">Anyone</b>.</li>
+                            <li>Salin URL Web App dan paste ke variabel <b class="text-slate-200">GAS_WEBHOOK_URL</b> di kode HTML ini.</li>
+                        </ol>
+                    </div>
+
+                    <div class="relative">
+                        <button onclick="copyGasCode()" class="absolute top-2 right-2 bg-amber-500 text-slate-950 font-bold px-2.5 py-1 rounded text-[10px] hover:bg-amber-400">
+                            <i class="fa-solid fa-copy"></i> Salin Kode
+                        </button>
+                        <textarea id="gas-code-textarea" readonly rows="12" class="w-full bg-slate-950 text-slate-300 font-mono text-[10px] p-3 rounded-xl border border-slate-800 focus:outline-none"></textarea>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- ADMIN LOGIN MODAL -->
+        <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xs p-5 space-y-4 shadow-2xl">
+                <div class="text-center space-y-1">
+                    <div class="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 mx-auto flex items-center justify-center text-lg mb-2">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-100">Verifikasi Admin</h3>
+                    <p class="text-xs text-slate-400">Masukkan PIN Admin 6-Digit</p>
+                </div>
+                <div>
+                    <input type="password" id="admin-pin-input" maxlength="6" class="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 text-center text-lg font-bold tracking-widest text-amber-400 focus:outline-none focus:border-amber-400" placeholder="••••••">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="closeAdminModal()" class="flex-1 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-700">Batal</button>
+                    <button onclick="verifyAdminPin()" class="flex-1 py-2 bg-amber-500 text-slate-950 rounded-xl text-xs font-bold hover:bg-amber-400">Masuk</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TOAST NOTIFICATION -->
+        <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 border border-amber-500/50 text-slate-100 px-4 py-2.5 rounded-xl shadow-xl text-xs flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-amber-400"></i>
+            <span id="toast-msg">Notifikasi</span>
+        </div>
+
+        <!-- FOOTER BRANDING -->
+        <footer class="bg-slate-900/90 py-2.5 px-4 text-center border-t border-slate-800 text-[10px] text-slate-500">
+            &copy; 2026 Batik Arizi Creator Management Tool
+        </footer>
+    </div>
+
+    <script>
+        // SPREADSHEET CONFIGURATION LINK & WEBHOOK ENDPOINT
+        const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/15nhvuetas7kx5Ix6uOO-Rj3EcKaK8qwh9SGNZKDdYps/edit?usp=sharing";
+        
+        // PASTE URL WEBHOOK APPS SCRIPT DI SINI BILA SUDAH DIDEPLOY
+        const GAS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyCtlo88RO-W5U2Fu603OWnY9IjkGazMyvHfnUWOtyLgKbAoakT2Zcp6EyYbMc2bFfC/exec";
+        
+        // IN-MEMORY APP STATE (NO LOCALSTORAGE PERSISTENCE - DIRECT SYNC TO SPREADSHEET)
+        let currentUser = null;
+        let usersData = [];
+        let contentsData = [];
+        
+        // ADMIN PIN
+        const ADMIN_PIN = "051017";
+
+        window.onload = async function() {
+            // Initialize today's date in input form
+            document.getElementById('content-date').value = getTodayDateString();
+            
+            // Set default date filter to current month
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+            document.getElementById('filter-start').value = startOfMonth;
+            document.getElementById('filter-end').value = endOfMonth;
+
+            // Load GAS Code into Admin view
+            populateGasCodeTextarea();
+
+            // Fetch live data directly from Spreadsheet GAS
+            await fetchAllDataFromSpreadsheet();
+
+            // Default to Auth View on launch
+            showAuthView();
+        };
+
+        function isValidGasUrl(url) {
+            try {
+                const parsed = new URL(url);
+                return (parsed.protocol === 'http:' || parsed.protocol === 'https:') && url !== "";
+            } catch (e) {
+                return false;
+            }
+        }
+
+        async function fetchAllDataFromSpreadsheet() {
+            if (!isValidGasUrl(GAS_WEBHOOK_URL)) {
+                console.log("GAS_WEBHOOK_URL belum diisi. Paste URL Web App pada file HTML untuk sinkronisasi live.");
+                populateUserDropdown();
+                return;
+            }
+
+            try {
+                showToast("Memuat data dari Spreadsheet...");
+                const response = await fetch(`${GAS_WEBHOOK_URL}?action=getData`);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    usersData = result.users || [];
+                    contentsData = result.contents || [];
+                    populateUserDropdown();
+                    
+                    if (currentUser) {
+                        const updatedCur = usersData.find(u => u.email === currentUser.email);
+                        if (updatedCur) currentUser = updatedCur;
+                        renderCreatorDashboard();
+                    }
+                }
+            } catch (err) {
+                console.error("Gagal mengambil data dari Spreadsheet:", err);
+                showToast("Gagal menyambung ke Spreadsheet", true);
+            }
+        }
+
+        async function syncToSpreadsheet(actionType, payload) {
+            if (!isValidGasUrl(GAS_WEBHOOK_URL)) {
+                console.log("GAS_WEBHOOK_URL belum diisi. Perubahan tersimpan di memori aktif.");
+                return { status: "success" };
+            }
+            
+            try {
+                const response = await fetch(GAS_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: actionType, ...payload })
+                });
+                return await response.json();
+            } catch (err) {
+                console.error("Gagal sinkronisasi ke GAS:", err);
+                return { status: "error", message: err.message };
+            }
+        }
+
+        function populateUserDropdown() {
+            const selectEl = document.getElementById('login-user-select');
+            selectEl.innerHTML = '';
+
+            if (usersData.length === 0) {
+                selectEl.innerHTML = `<option value="" disabled selected>Belum ada kreator terdaftar</option>`;
+                return;
+            }
+
+            selectEl.innerHTML = `<option value="" disabled selected>-- Pilih Nama Kreator --</option>` + 
+                usersData.map(u => `<option value="${u.email}">${u.name} (${u.email})</option>`).join('');
+        }
+
+        function getTodayDateString() {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        }
+
+        function formatDateReadable(dateStr) {
+            if(!dateStr) return '';
+            const [y, m, d] = dateStr.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = message;
+            if(isError) {
+                toastIcon.className = "fa-solid fa-circle-xmark text-red-400";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-check text-amber-400";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function toggleAuthMode() {
+            const loginForm = document.getElementById('login-form');
+            const regForm = document.getElementById('register-form');
+            const authTitle = document.getElementById('auth-title');
+            const authSubtitle = document.getElementById('auth-subtitle');
+            const toggleBtn = document.getElementById('toggle-auth-btn');
+
+            if (loginForm.classList.contains('hidden')) {
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+                authTitle.innerText = "Masuk Kreator";
+                authSubtitle.innerText = "Pilih nama akun Anda dari dropdown dan masukkan password";
+                toggleBtn.innerText = "Belum punya akun? Daftar";
+            } else {
+                loginForm.classList.add('hidden');
+                regForm.classList.remove('hidden');
+                authTitle.innerText = "Pendaftaran Kreator Baru";
+                authSubtitle.innerText = "Lengkapi data diri dan masukkan PIN verifikasi Admin";
+                toggleBtn.innerText = "Sudah punya akun? Masuk";
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const pin = document.getElementById('reg-admin-pin').value;
+            if (pin !== ADMIN_PIN) {
+                showToast("PIN Admin Pendaftaran salah!", true);
+                return;
+            }
+
+            const email = document.getElementById('reg-email').value.trim().toLowerCase();
+            const existing = usersData.find(u => u.email === email);
+            if (existing) {
+                showToast("Email sudah terdaftar!", true);
+                return;
+            }
+
+            const newUser = {
+                id: 'usr_' + Date.now(),
+                name: document.getElementById('reg-name').value.trim(),
+                dob: document.getElementById('reg-dob').value,
+                phone: document.getElementById('reg-phone').value.trim(),
+                address: document.getElementById('reg-address').value.trim(),
+                email: email,
+                password: document.getElementById('reg-password').value,
+                registeredAt: new Date().toISOString()
+            };
+
+            showToast("Mendaftarkan & menyinkronkan...");
+            await syncToSpreadsheet("registerUser", { user: newUser });
+            usersData.push(newUser);
+            populateUserDropdown();
+
+            currentUser = newUser;
+            showToast("Pendaftaran berhasil!");
+            showCreatorDashboard();
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const selectedEmail = document.getElementById('login-user-select').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!selectedEmail) {
+                showToast("Silakan pilih nama kreator!", true);
+                return;
+            }
+
+            const user = usersData.find(u => u.email === selectedEmail && u.password === password);
+            if (!user) {
+                showToast("Password salah!", true);
+                return;
+            }
+
+            currentUser = user;
+            showToast(`Selamat datang, ${currentUser.name}!`);
+            showCreatorDashboard();
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            showAuthView();
+            showToast("Berhasil keluar");
+        }
+
+        function showAuthView() {
+            document.getElementById('auth-view').classList.remove('hidden');
+            document.getElementById('creator-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.add('hidden');
+            document.getElementById('header-user-actions').classList.add('hidden');
+            populateUserDropdown();
+        }
+
+        function showCreatorDashboard() {
+            document.getElementById('auth-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.add('hidden');
+            document.getElementById('creator-view').classList.remove('hidden');
+            document.getElementById('header-user-actions').classList.remove('hidden');
+            document.getElementById('current-user-badge').innerText = currentUser.name;
+
+            renderCreatorDashboard();
+        }
+
+        async function handleAddContent(e) {
+            e.preventDefault();
+            const linkInput = document.getElementById('content-link').value.trim();
+            const dateInput = document.getElementById('content-date').value;
+            const hasCart = document.getElementById('content-cart-toggle').checked;
+
+            if (!linkInput) return;
+
+            // DONT ALLOW DUPLICATE VIDEO LINKS (CHECK ACROSS ALL CONTENTS)
+            const isDuplicate = contentsData.some(c => c.link.toLowerCase() === linkInput.toLowerCase());
+            if (isDuplicate) {
+                showToast("Link video ini sudah pernah dimasukkan sebelumnya!", true);
+                return;
+            }
+
+            const newContent = {
+                id: 'cnt_' + Date.now(),
+                creatorEmail: currentUser.email,
+                creatorName: currentUser.name,
+                link: linkInput,
+                date: dateInput,
+                hasCart: hasCart,
+                createdAt: new Date().toISOString()
+            };
+
+            showToast("Mengirim laporan ke Spreadsheet...");
+            await syncToSpreadsheet("addContent", { content: newContent });
+            contentsData.unshift(newContent);
+
+            // Reset Form
+            document.getElementById('content-link').value = '';
+            document.getElementById('content-cart-toggle').checked = false;
+
+            showToast("Laporan konten berhasil ditambahkan!");
+            renderCreatorDashboard();
+        }
+
+        function renderCreatorDashboard() {
+            if (!currentUser) return;
+
+            // ISOLATED USER DATA FILTER (CREATORS ONLY SEE THEIR OWN DATA)
+            const myContents = contentsData.filter(c => c.creatorEmail === currentUser.email);
+
+            // DAILY TARGET SUMMARY
+            const todayStr = getTodayDateString();
+            document.getElementById('today-date-text').innerText = formatDateReadable(todayStr);
+
+            const todayContents = myContents.filter(c => c.date === todayStr);
+            const todayCount = todayContents.length;
+            document.getElementById('today-count').innerText = todayCount;
+
+            const progressPct = Math.min((todayCount / 8) * 100, 100);
+            document.getElementById('today-progress-bar').style.width = `${progressPct}%`;
+
+            const statusMsg = document.getElementById('target-status-msg');
+            if (todayCount >= 8) {
+                statusMsg.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> Target harian tercapai! (${todayCount} video)`;
+            } else {
+                statusMsg.innerHTML = `<i class="fa-solid fa-circle-info text-amber-400"></i> Kurang ${8 - todayCount} video untuk mencapai target 8.`;
+            }
+
+            // WEEKLY & MONTHLY PERFORMANCE RECAP
+            calculatePerformanceMetrics(myContents);
+
+            // HISTORY TABLE RENDER
+            renderCreatorHistory();
+        }
+
+        function calculatePerformanceMetrics(myContents) {
+            const now = new Date();
+            
+            // Weekly Range (Monday to Sunday)
+            const currentDay = now.getDay();
+            const diffToMon = now.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
+            const mon = new Date(now.setDate(diffToMon));
+            const sun = new Date(now.setDate(mon.getDate() + 6));
+            
+            const weeklyStartStr = mon.toISOString().split('T')[0];
+            const weeklyEndStr = sun.toISOString().split('T')[0];
+
+            document.getElementById('weekly-range').innerText = `${formatDateReadable(weeklyStartStr)} - ${formatDateReadable(weeklyEndStr)}`;
+
+            const weeklyContents = myContents.filter(c => c.date >= weeklyStartStr && c.date <= weeklyEndStr);
+            const weeklyCount = weeklyContents.length;
+            document.getElementById('weekly-count').innerText = `${weeklyCount} Video`;
+
+            // Weekly Target Accuracy: Total Target for 7 days = 7 * 8 = 56 videos
+            const weeklyTarget = 7 * 8;
+            const weeklyAccuracy = Math.min(Math.round((weeklyCount / weeklyTarget) * 100), 100);
+            document.getElementById('weekly-acc').innerText = `${weeklyAccuracy}%`;
+
+            // Monthly Range
+            const firstDayMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            const lastDayMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+            const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+
+            document.getElementById('monthly-range').innerText = `${formatDateReadable(firstDayMonth)} - ${formatDateReadable(lastDayMonth)}`;
+
+            const monthlyContents = myContents.filter(c => c.date >= firstDayMonth && c.date <= lastDayMonth);
+            const monthlyCount = monthlyContents.length;
+            document.getElementById('monthly-count').innerText = `${monthlyCount} Video`;
+
+            // Monthly Target Accuracy: total Days * 8
+            const monthlyTarget = totalDaysInMonth * 8;
+            const monthlyAccuracy = Math.min(Math.round((monthlyCount / monthlyTarget) * 100), 100);
+            document.getElementById('monthly-acc').innerText = `${monthlyAccuracy}%`;
+        }
+
+        function renderCreatorHistory() {
+            const start = document.getElementById('filter-start').value;
+            const end = document.getElementById('filter-end').value;
+
+            const myContents = contentsData.filter(c => {
+                if (c.creatorEmail !== currentUser.email) return false;
+                if (start && c.date < start) return false;
+                if (end && c.date > end) return false;
+                return true;
+            });
+
+            const historyContainer = document.getElementById('creator-history-list');
+            if (myContents.length === 0) {
+                historyContainer.innerHTML = `<p class="text-center text-slate-500 text-xs py-4">Belum ada data konten pada rentang ini.</p>`;
+                return;
+            }
+
+            historyContainer.innerHTML = myContents.map(c => `
+                <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex items-center justify-between">
+                    <div class="space-y-1 overflow-hidden pr-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-300">${formatDateReadable(c.date)}</span>
+                            ${c.hasCart 
+                                ? `<span class="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded flex items-center gap-1"><i class="fa-solid fa-basket-shopping text-[8px]"></i> Keranjang Kuning</span>`
+                                : `<span class="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">Non-Keranjang</span>`
+                            }
+                        </div>
+                        <a href="${c.link}" target="_blank" class="text-xs text-amber-400 hover:underline truncate block max-w-[240px]">
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px] mr-1"></i>${c.link}
+                        </a>
+                    </div>
+                    <button onclick="deleteContent('${c.id}')" class="text-slate-600 hover:text-red-400 p-1.5 transition" title="Hapus">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function deleteContent(id) {
+            if (confirm("Hapus laporan konten ini?")) {
+                showToast("Menghapus laporan...");
+                await syncToSpreadsheet("deleteContent", { id: id });
+                contentsData = contentsData.filter(c => c.id !== id);
+                showToast("Laporan konten dihapus");
+                renderCreatorDashboard();
+            }
+        }
+
+        function exportPdfReport() {
+            const start = document.getElementById('filter-start').value;
+            const end = document.getElementById('filter-end').value;
+
+            const filteredContents = contentsData.filter(c => {
+                if (c.creatorEmail !== currentUser.email) return false;
+                if (start && c.date < start) return false;
+                if (end && c.date > end) return false;
+                return true;
+            });
+
+            const totalUploaded = filteredContents.length;
+            const cartCount = filteredContents.filter(c => c.hasCart).length;
+            const nonCartCount = totalUploaded - cartCount;
+
+            const reportElement = document.createElement('div');
+            reportElement.style.padding = '20px';
+            reportElement.style.fontFamily = 'sans-serif';
+            reportElement.style.color = '#1e293b';
+            reportElement.style.backgroundColor = '#ffffff';
+
+            reportElement.innerHTML = `
+                <div style="border-bottom: 2px solid #d4af37; padding-bottom: 10px; margin-bottom: 15px;">
+                    <h1 style="font-size: 18px; margin:0; color: #0f172a;">BATIK ARIZI - LAPORAN PERFORMA KONTEN KREATOR</h1>
+                    <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">Rentang Tanggal: ${formatDateReadable(start)} s/d ${formatDateReadable(end)}</p>
+                </div>
+
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+                    <h3 style="font-size: 12px; margin: 0 0 8px 0; color: #0f172a;">IDENTITAS KREATOR</h3>
+                    <table style="font-size: 11px; width: 100%;">
+                        <tr><td style="width: 100px; color: #64748b;">Nama</td><td>: <b>${currentUser.name}</b></td></tr>
+                        <tr><td style="color: #64748b;">Email</td><td>: ${currentUser.email}</td></tr>
+                        <tr><td style="color: #64748b;">WhatsApp</td><td>: ${currentUser.phone}</td></tr>
+                    </table>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <div style="flex: 1; background: #fffbe2; border: 1px solid #fef08a; padding: 10px; border-radius: 6px; text-align: center;">
+                        <span style="font-size: 10px; color: #854d0e;">TOTAL KONTEN</span>
+                        <div style="font-size: 18px; font-weight: bold; color: #a16207;">${totalUploaded}</div>
+                    </div>
+                    <div style="flex: 1; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 6px; text-align: center;">
+                        <span style="font-size: 10px; color: #166534;">KERANJANG KUNING</span>
+                        <div style="font-size: 18px; font-weight: bold; color: #15803d;">${cartCount}</div>
+                    </div>
+                    <div style="flex: 1; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
+                        <span style="font-size: 10px; color: #475569;">NON KERANJANG</span>
+                        <div style="font-size: 18px; font-weight: bold; color: #334155;">${nonCartCount}</div>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 12px; margin-bottom: 6px;">DAFTAR UPLOAD KONTEN</h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px; text-align: left;">
+                    <thead>
+                        <tr style="background: #0f172a; color: #ffffff;">
+                            <th style="padding: 6px; border: 1px solid #334155;">No</th>
+                            <th style="padding: 6px; border: 1px solid #334155;">Tanggal</th>
+                            <th style="padding: 6px; border: 1px solid #334155;">Kategori</th>
+                            <th style="padding: 6px; border: 1px solid #334155;">Link Video</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredContents.map((c, idx) => `
+                            <tr>
+                                <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: center;">${idx + 1}</td>
+                                <td style="padding: 6px; border: 1px solid #e2e8f0;">${formatDateReadable(c.date)}</td>
+                                <td style="padding: 6px; border: 1px solid #e2e8f0;">${c.hasCart ? 'Keranjang Kuning' : 'Non-Keranjang'}</td>
+                                <td style="padding: 6px; border: 1px solid #e2e8f0; word-break: break-all; color: #2563eb;">${c.link}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            const opt = {
+                margin:       10,
+                filename:     `Laporan_BatikArizi_${currentUser.name.replace(/\s+/g, '_')}_${start}_${end}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(reportElement).save();
+            showToast("Memproses download PDF...");
+        }
+
+        function openAdminModal() {
+            document.getElementById('admin-pin-input').value = '';
+            document.getElementById('admin-modal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function verifyAdminPin() {
+            const inputPin = document.getElementById('admin-pin-input').value;
+            if (inputPin === ADMIN_PIN) {
+                closeAdminModal();
+                showAdminDashboard();
+                showToast("Akses Admin Diberikan");
+            } else {
+                showToast("PIN Admin Salah!", true);
+            }
+        }
+
+        function showAdminDashboard() {
+            document.getElementById('auth-view').classList.add('hidden');
+            document.getElementById('creator-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.remove('hidden');
+
+            renderAdminData();
+        }
+
+        function exitAdminView() {
+            if (currentUser) {
+                showCreatorDashboard();
+            } else {
+                showAuthView();
+            }
+        }
+
+        function switchAdminTab(tabName) {
+            document.getElementById('admin-tab-users').classList.add('hidden');
+            document.getElementById('admin-tab-contents').classList.add('hidden');
+            document.getElementById('admin-tab-gas').classList.add('hidden');
+
+            document.getElementById('tab-users-btn').className = "flex-1 py-2 text-center text-xs font-semibold text-slate-400 border-b-2 border-transparent";
+            document.getElementById('tab-contents-btn').className = "flex-1 py-2 text-center text-xs font-semibold text-slate-400 border-b-2 border-transparent";
+            document.getElementById('tab-gas-btn').className = "flex-1 py-2 text-center text-xs font-semibold text-slate-400 border-b-2 border-transparent";
+
+            if (tabName === 'users') {
+                document.getElementById('admin-tab-users').classList.remove('hidden');
+                document.getElementById('tab-users-btn').className = "flex-1 py-2 text-center text-xs font-semibold text-amber-400 border-b-2 border-amber-400";
+            } else if (tabName === 'contents') {
+                document.getElementById('admin-tab-contents').classList.remove('hidden');
+                document.getElementById('tab-contents-btn').className = "flex-1 py-2 text-center text-xs font-semibold text-amber-400 border-b-2 border-amber-400";
+            } else if (tabName === 'gas') {
+                document.getElementById('admin-tab-gas').classList.remove('hidden');
+                document.getElementById('tab-gas-btn').className = "flex-1 py-2 text-center text-xs font-semibold text-amber-400 border-b-2 border-amber-400";
+            }
+        }
+
+        function renderAdminData() {
+            // Render Users
+            const usersTableBody = document.getElementById('admin-users-table');
+            if (usersData.length === 0) {
+                usersTableBody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-slate-500">Belum ada user terdaftar.</td></tr>`;
+            } else {
+                usersTableBody.innerHTML = usersData.map(u => `
+                    <tr class="hover:bg-slate-800/40">
+                        <td class="p-2 font-medium text-slate-100">${u.name}</td>
+                        <td class="p-2 text-slate-400">${u.email}</td>
+                        <td class="p-2 text-slate-400">${u.phone}</td>
+                        <td class="p-2 text-slate-400">${u.address}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Render All Contents
+            const adminContentsList = document.getElementById('admin-contents-list');
+            if (contentsData.length === 0) {
+                adminContentsList.innerHTML = `<p class="text-center text-slate-500 text-xs py-4">Belum ada konten diunggah.</p>`;
+            } else {
+                adminContentsList.innerHTML = contentsData.map(c => `
+                    <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl space-y-1">
+                        <div class="flex justify-between text-[10px]">
+                            <span class="text-amber-400 font-semibold">${c.creatorName} (${c.creatorEmail})</span>
+                            <span class="text-slate-500">${formatDateReadable(c.date)}</span>
+                        </div>
+                        <a href="${c.link}" target="_blank" class="text-xs text-slate-200 hover:underline truncate block">
+                            ${c.link}
+                        </a>
+                        <div class="text-[9px] text-slate-400">
+                            Status: ${c.hasCart ? '<span class="text-amber-400">Keranjang Kuning</span>' : 'Non-Keranjang'}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function populateGasCodeTextarea() {
+            const gasCode = `// KODE GOOGLE APPS SCRIPT (GAS) - BATIK ARIZI CREATOR MANAGEMENT
+// Salin seluruh kode ini ke Apps Script Google Spreadsheet Anda
+
+function doGet(e) {
+  var action = e.parameter.action;
+  if (action === "getData") {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // Fetch Users Sheet
+    var userSheet = ss.getSheetByName("user");
+    var users = [];
+    if (userSheet && userSheet.getLastRow() > 1) {
+      var uValues = userSheet.getRange(2, 1, userSheet.getLastRow() - 1, 8).getValues();
+      users = uValues.map(function(r) {
+        return {
+          id: r[0], name: r[1], dob: r[2], phone: r[3],
+          address: r[4], email: r[5], password: r[6], registeredAt: r[7]
+        };
+      });
+    }
+
+    // Fetch Konten Sheet
+    var contentSheet = ss.getSheetByName("konten");
+    var contents = [];
+    if (contentSheet && contentSheet.getLastRow() > 1) {
+      var cValues = contentSheet.getRange(2, 1, contentSheet.getLastRow() - 1, 7).getValues();
+      contents = cValues.map(function(r) {
+        return {
+          id: r[0], creatorEmail: r[1], creatorName: r[2],
+          link: r[3], date: r[4], hasCart: r[5] === "Ya", createdAt: r[6]
+        };
+      }).reverse(); // Latest first
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "success",
+      users: users,
+      contents: contents
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({status: "success", message: "Batik Arizi Web Service Active"}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var data = JSON.parse(e.postData.contents);
+  
+  if (data.action === "registerUser") {
+    var sheet = ss.getSheetByName("user") || ss.insertSheet("user");
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["ID User", "Nama", "Tanggal Lahir", "No WhatsApp", "Alamat", "Email", "Password", "Tanggal Daftar"]);
+    }
+    sheet.appendRow([
+      data.user.id, data.user.name, data.user.dob, data.user.phone,
+      data.user.address, data.user.email, data.user.password, data.user.registeredAt
+    ]);
+    return ContentService.createTextOutput(JSON.stringify({status: "success"})).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  if (data.action === "addContent") {
+    var sheet = ss.getSheetByName("konten") || ss.insertSheet("konten");
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["ID Konten", "Email Kreator", "Nama Kreator", "Link Video", "Tanggal Upload", "Keranjang Kuning", "Timestamp"]);
+    }
+    
+    // Check Link Duplication in Spreadsheet
+    var existingLinks = sheet.getRange(2, 4, Math.max(sheet.getLastRow()-1, 1), 1).getValues().flat();
+    if (existingLinks.indexOf(data.content.link) !== -1) {
+      return ContentService.createTextOutput(JSON.stringify({status: "error", message: "Link sudah ada"})).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    sheet.appendRow([
+      data.content.id, data.content.creatorEmail, data.content.creatorName,
+      data.content.link, data.content.date, data.content.hasCart ? "Ya" : "Tidak", data.content.createdAt
+    ]);
+    return ContentService.createTextOutput(JSON.stringify({status: "success"})).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (data.action === "deleteContent") {
+    var sheet = ss.getSheetByName("konten");
+    if (sheet) {
+      var ids = sheet.getRange(2, 1, Math.max(sheet.getLastRow()-1, 1), 1).getValues().flat();
+      var idx = ids.indexOf(data.id);
+      if (idx !== -1) {
+        sheet.deleteRow(idx + 2);
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({status: "success"})).setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+            document.getElementById('gas-code-textarea').value = gasCode;
+        }
+
+        function copyGasCode() {
+            const textarea = document.getElementById('gas-code-textarea');
+            textarea.select();
+            document.execCommand('copy');
+            showToast("Kode GAS berhasil disalin ke clipboard!");
+        }
+    </script>
+</body>
+</html>
