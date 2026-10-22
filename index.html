@@ -36,7 +36,6 @@
             background-color: #0B0F19;
             color: #F8FAFC;
         }
-        /* Custom scrollbar styling */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -61,7 +60,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-sm text-slate-100 tracking-wide">BATIK ARIZI</h1>
-                    <p class="text-[10px] text-amber-400/90 font-medium tracking-wider">CREATOR HUB</p>
+                    <p class="text-[10px] text-amber-400/90 font-medium tracking-wider" id="realtime-clock-display">MEMUAT WAKTU...</p>
                 </div>
             </div>
             <div id="header-user-actions" class="hidden flex items-center gap-2">
@@ -72,13 +71,12 @@
             </div>
         </header>
 
-        <!-- MAIN VIEW CONTAINER -->
         <main class="flex-1 overflow-y-auto px-4 py-5 space-y-6 pb-24" id="main-content">
             
             <!-- AUTH VIEW (LOGIN WITH DROPDOWN / REGISTER) -->
             <section id="auth-view" class="space-y-5 my-auto py-4">
-                <div class="text-center space-y-2 mb-6">
-                    <div class="inline-flex p-3 rounded-2xl bg-amber-500/10 text-amber-400 mb-2 border border-amber-500/20">
+                <div class="text-center space-y-2 mb-4">
+                    <div class="inline-flex p-3 rounded-2xl bg-amber-500/10 text-amber-400 mb-1 border border-amber-500/20">
                         <i class="fa-solid fa-video text-2xl"></i>
                     </div>
                     <h2 class="text-xl font-bold text-slate-100" id="auth-title">Masuk Kreator</h2>
@@ -92,7 +90,7 @@
                         <div class="relative">
                             <i class="fa-solid fa-user-tag absolute left-3.5 top-3.5 text-xs text-slate-500 z-10"></i>
                             <select id="login-user-select" required class="w-full bg-slate-800/80 border border-slate-700 rounded-xl py-2.5 pl-10 pr-8 text-xs text-slate-100 focus:outline-none focus:border-amber-400 transition appearance-none cursor-pointer">
-                                <option value="" disabled selected>Memuat daftar kreator...</option>
+                                <option value="" disabled selected>Memuat daftar kreator dari spreadsheet...</option>
                             </select>
                             <i class="fa-solid fa-chevron-down absolute right-3.5 top-3.5 text-xs text-slate-500 pointer-events-none"></i>
                         </div>
@@ -156,7 +154,7 @@
                 </div>
             </section>
 
-            <!-- CREATOR DASHBOARD VIEW -->
+            <!-- CREATOR VIEW -->
             <section id="creator-view" class="space-y-5 hidden">
                 <!-- Daily Progress Card -->
                 <div class="bg-gradient-to-br from-slate-800/90 to-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
@@ -171,7 +169,6 @@
                         </div>
                     </div>
                     
-                    <!-- Progress Bar -->
                     <div class="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden border border-slate-800">
                         <div id="today-progress-bar" class="bg-gradient-to-r from-amber-500 to-yellow-300 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
                     </div>
@@ -180,54 +177,94 @@
                     </div>
                 </div>
 
-                <!-- Input Link Video Form -->
-                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 space-y-3">
-                    <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-plus-circle text-amber-400"></i> Lapor Link Video Baru
-                    </h3>
-                    <form onsubmit="handleAddContent(event)" class="space-y-3">
+                <!-- Custom Date Content Inspector Card -->
+                <div class="bg-slate-800/60 border border-amber-500/30 rounded-2xl p-4 space-y-3 shadow-md">
+                    <div class="flex justify-between items-center border-b border-slate-700/60 pb-2.5">
                         <div>
-                            <label class="block text-[11px] text-slate-400 mb-1">Tanggal Upload / Laporan</label>
+                            <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-calendar-check"></i> Cek Jumlah Konten Terupload
+                            </h3>
+                            <p class="text-[10px] text-slate-400">Pilih tanggal untuk melihat jumlah & rincian konten</p>
+                        </div>
+                        <div class="text-right">
+                            <span id="custom-date-count" class="text-base font-extrabold px-3 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                                0 Video
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1 font-medium">Pilih Tanggal Laporan:</label>
+                        <input type="date" id="custom-view-date" onchange="renderCustomDateCard()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-xs text-slate-100 focus:outline-none focus:border-amber-400 transition cursor-pointer">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-center pt-1">
+                        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                            <span class="text-[9px] text-slate-400 block font-medium">Keranjang Kuning</span>
+                            <span id="custom-cart-count" class="text-sm font-extrabold text-amber-400">0 Video</span>
+                        </div>
+                        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                            <span class="text-[9px] text-slate-400 block font-medium">Non-Keranjang</span>
+                            <span id="custom-noncart-count" class="text-sm font-extrabold text-slate-300">0 Video</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Link Video Form (Up to 20 links support) -->
+                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-plus-circle text-amber-400"></i> Lapor Link Video Konten
+                            </h3>
+                            <p class="text-[10px] text-slate-400">Input hingga 20 kolom link sekaligus</p>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button type="button" onclick="addLinkRow()" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg text-[10px] font-bold border border-amber-500/30 flex items-center gap-1 transition">
+                                <i class="fa-solid fa-plus"></i> Tambah Kolom
+                            </button>
+                        </div>
+                    </div>
+
+                    <form onsubmit="handleAddBatchContent(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-[11px] text-slate-400 mb-1 font-semibold">Tanggal Upload / Laporan</label>
                             <input type="date" id="content-date" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
                         </div>
-                        <div>
-                            <label class="block text-[11px] text-slate-400 mb-1">Link Video Konten</label>
-                            <input type="url" id="content-link" required placeholder="https://vt.tiktok.com/... atau link video" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-slate-100 focus:outline-none focus:border-amber-400">
+
+                        <div class="space-y-2.5 max-h-72 overflow-y-auto pr-1" id="multi-link-container">
+                            <!-- Dynamic Rows -->
                         </div>
-                        <div class="flex items-center justify-between p-3 bg-slate-900/80 rounded-xl border border-slate-800">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-basket-shopping text-amber-400 text-sm"></i>
-                                <span class="text-xs text-slate-200 font-medium">Keranjang Kuning</span>
-                            </div>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="content-cart-toggle" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-                            </label>
+
+                        <div class="flex justify-between items-center pt-2">
+                            <span class="text-[10px] text-slate-400" id="link-row-count-badge">Terisi: 0 / 20 Kolom</span>
+                            <button type="button" onclick="clearAllLinkInputs()" class="text-[10px] text-red-400 hover:underline">
+                                Bersihkan Input
+                            </button>
                         </div>
-                        <button type="submit" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-paper-plane"></i> Simpan & Kirim
+
+                        <button type="submit" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> Simpan & Kirim Semua Video
                         </button>
                     </form>
                 </div>
 
-                <!-- Summary Cards Section -->
+                <!-- Summary Performance Cards -->
                 <div class="space-y-3">
                     <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Ringkasan Performa</h3>
                     
                     <div class="grid grid-cols-2 gap-3">
-                        <!-- Mingguan Card -->
                         <div class="bg-slate-800/50 border border-slate-700/50 p-3 rounded-2xl space-y-1">
                             <span class="text-[10px] text-slate-400 font-semibold block">Minggu Ini</span>
                             <div class="text-lg font-bold text-amber-400" id="weekly-count">0 Video</div>
-                            <div class="text-[10px] text-slate-400">Rata2 Ketepatan: <span id="weekly-acc" class="text-slate-200 font-semibold">0%</span></div>
+                            <div class="text-[10px] text-slate-400">Ketepatan Target: <span id="weekly-acc" class="text-slate-200 font-semibold">0%</span></div>
                             <p class="text-[9px] text-slate-500 truncate" id="weekly-range">--</p>
                         </div>
 
-                        <!-- Bulanan Card -->
                         <div class="bg-slate-800/50 border border-slate-700/50 p-3 rounded-2xl space-y-1">
                             <span class="text-[10px] text-slate-400 font-semibold block">Bulan Ini</span>
                             <div class="text-lg font-bold text-emerald-400" id="monthly-count">0 Video</div>
-                            <div class="text-[10px] text-slate-400">Rata2 Ketepatan: <span id="monthly-acc" class="text-slate-200 font-semibold">0%</span></div>
+                            <div class="text-[10px] text-slate-400">Ketepatan Target: <span id="monthly-acc" class="text-slate-200 font-semibold">0%</span></div>
                             <p class="text-[9px] text-slate-500 truncate" id="monthly-range">--</p>
                         </div>
                     </div>
@@ -237,12 +274,11 @@
                 <div class="bg-slate-800/40 border border-slate-800 rounded-2xl p-4 space-y-3">
                     <div class="flex justify-between items-center">
                         <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Riwayat Konten Saya</h3>
-                        <button onclick="exportPdfReport()" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-[11px] font-medium rounded-lg transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-pdf text-red-400"></i> Export PDF
+                        <button onclick="previewPdfReport()" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 text-[11px] font-medium rounded-lg transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-pdf text-red-400"></i> Preview & Export PDF
                         </button>
                     </div>
 
-                    <!-- Filter Rentang Tanggal -->
                     <div class="grid grid-cols-2 gap-2 bg-slate-900/60 p-2 rounded-xl border border-slate-800">
                         <div>
                             <label class="block text-[9px] text-slate-400">Tgl Mulai</label>
@@ -254,181 +290,400 @@
                         </div>
                     </div>
 
-                    <!-- Content List -->
                     <div id="creator-history-list" class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                        <!-- Content items dynamically rendered -->
+                        <!-- Content rendered dynamically -->
                     </div>
                 </div>
             </section>
 
-            <!-- ADMIN PANEL VIEW -->
+            <!-- ADMIN VIEW -->
             <section id="admin-view" class="space-y-5 hidden">
-                <div class="bg-amber-500/10 border border-amber-500/30 p-3.5 rounded-2xl flex justify-between items-center">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-bold">
-                            <i class="fa-solid fa-user-shield"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xs font-bold text-amber-300">ADMINISTRATOR PANEL</h3>
-                            <p class="text-[10px] text-slate-400">Wewenang Penuh Sistem</p>
-                        </div>
+                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-users"></i> Daftar Semua Kreator
+                        </h3>
+                        <button onclick="fetchAllDataFromSpreadsheet()" class="text-xs text-amber-400 hover:underline flex items-center gap-1">
+                            <i class="fa-solid fa-rotate"></i> Sync Data
+                        </button>
                     </div>
-                    <button onclick="exitAdminView()" class="text-xs text-slate-400 hover:text-slate-100 bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700">Keluar Admin</button>
-                </div>
-
-                <!-- TAB SWITCHER -->
-                <div class="flex border-b border-slate-800">
-                    <button onclick="switchAdminTab('users')" id="tab-users-btn" class="flex-1 py-2 text-center text-xs font-semibold text-amber-400 border-b-2 border-amber-400">
-                        Data Users
-                    </button>
-                    <button onclick="switchAdminTab('contents')" id="tab-contents-btn" class="flex-1 py-2 text-center text-xs font-semibold text-slate-400 border-b-2 border-transparent">
-                        Semua Konten
-                    </button>
-                    <button onclick="switchAdminTab('gas')" id="tab-gas-btn" class="flex-1 py-2 text-center text-xs font-semibold text-slate-400 border-b-2 border-transparent">
-                        Kode GAS Apps
-                    </button>
-                </div>
-
-                <!-- ADMIN TAB CONTENT: USERS -->
-                <div id="admin-tab-users" class="space-y-3">
-                    <h4 class="text-xs font-bold text-slate-300">Daftar Konten Kreator Terdaftar</h4>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-[11px] text-slate-300">
-                            <thead class="bg-slate-800/80 text-amber-400 uppercase text-[9px]">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900/80 text-[10px] text-slate-400 uppercase">
                                 <tr>
                                     <th class="p-2">Nama</th>
                                     <th class="p-2">Email</th>
-                                    <th class="p-2">No WA</th>
+                                    <th class="p-2">WhatsApp</th>
                                     <th class="p-2">Alamat</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-users-table" class="divide-y divide-slate-800">
-                                <!-- Users list populated dynamically -->
+                            <tbody id="admin-users-table" class="divide-y divide-slate-800 text-[11px]">
+                                <!-- User rows -->
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- ADMIN TAB CONTENT: ALL CONTENTS -->
-                <div id="admin-tab-contents" class="space-y-3 hidden">
-                    <h4 class="text-xs font-bold text-slate-300">Rekap Seluruh Konten Kreator</h4>
-                    <div class="max-h-72 overflow-y-auto space-y-2" id="admin-contents-list">
-                        <!-- All contents listed dynamically -->
+                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-amber-400"></i> Semua Konten Masuk
+                    </h3>
+                    <div id="admin-contents-list" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                        <!-- Content entries -->
                     </div>
                 </div>
 
-                <!-- ADMIN TAB CONTENT: GOOGLE APPS SCRIPT CODE -->
-                <div id="admin-tab-gas" class="space-y-3 hidden">
-                    <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700 text-xs text-slate-300 space-y-2">
-                        <p class="font-semibold text-amber-400"><i class="fa-solid fa-code"></i> Instructions Google Apps Script (GAS):</p>
-                        <ol class="list-decimal list-inside text-[11px] space-y-1 text-slate-400">
-                            <li>Buka Google Spreadsheet Batik Arizi Anda: <a href="https://docs.google.com/spreadsheets/d/15nhvuetas7kx5Ix6uOO-Rj3EcKaK8qwh9SGNZKDdYps/edit?usp=sharing" target="_blank" class="text-amber-400 underline">Buka Spreadsheet</a>.</li>
-                            <li>Klik menu <b class="text-slate-200">Ekstensi > Apps Script</b>.</li>
-                            <li>Paste kode dibawah ke dalam file <b class="text-slate-200">Code.gs</b>.</li>
-                            <li>Klik <b class="text-slate-200">Deploy > New Deployment > Web app</b>.</li>
-                            <li>Atur <b class="text-slate-200">Who has access</b> ke <b class="text-amber-400">Anyone</b>.</li>
-                            <li>Salin URL Web App dan paste ke variabel <b class="text-slate-200">GAS_WEBHOOK_URL</b> di kode HTML ini.</li>
-                        </ol>
-                    </div>
-
-                    <div class="relative">
-                        <button onclick="copyGasCode()" class="absolute top-2 right-2 bg-amber-500 text-slate-950 font-bold px-2.5 py-1 rounded text-[10px] hover:bg-amber-400">
+                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-code"></i> Setup Google Apps Script
+                        </h3>
+                        <button onclick="copyGasCode()" class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-1 rounded hover:bg-amber-500/30">
                             <i class="fa-solid fa-copy"></i> Salin Kode
                         </button>
-                        <textarea id="gas-code-textarea" readonly rows="12" class="w-full bg-slate-950 text-slate-300 font-mono text-[10px] p-3 rounded-xl border border-slate-800 focus:outline-none"></textarea>
                     </div>
+                    <textarea id="gas-code-textarea" readonly rows="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-[10px] font-mono text-slate-400 focus:outline-none select-all"></textarea>
                 </div>
             </section>
 
-        </main>
-
-        <!-- ADMIN LOGIN MODAL -->
-        <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-            <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-xs p-5 space-y-4 shadow-2xl">
-                <div class="text-center space-y-1">
-                    <div class="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 mx-auto flex items-center justify-center text-lg mb-2">
-                        <i class="fa-solid fa-lock"></i>
+            <!-- SYNC MODAL -->
+            <div id="sync-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xs p-5 space-y-4 text-center shadow-2xl">
+                    <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 mx-auto flex items-center justify-center text-xl animate-spin">
+                        <i class="fa-solid fa-circle-notch"></i>
                     </div>
-                    <h3 class="text-sm font-bold text-slate-100">Verifikasi Admin</h3>
-                    <p class="text-xs text-slate-400">Masukkan PIN Admin 6-Digit</p>
-                </div>
-                <div>
-                    <input type="password" id="admin-pin-input" maxlength="6" class="w-full bg-slate-800 border border-slate-700 rounded-xl py-2.5 text-center text-lg font-bold tracking-widest text-amber-400 focus:outline-none focus:border-amber-400" placeholder="••••••">
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="closeAdminModal()" class="flex-1 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-semibold hover:bg-slate-700">Batal</button>
-                    <button onclick="verifyAdminPin()" class="flex-1 py-2 bg-amber-500 text-slate-950 rounded-xl text-xs font-bold hover:bg-amber-400">Masuk</button>
+                    <div class="space-y-1">
+                        <h3 class="text-sm font-bold text-slate-100" id="sync-status-title">Menyinkronkan Data</h3>
+                        <p class="text-[11px] text-slate-400" id="sync-status-subtitle">Mengirim laporan ke Google Spreadsheet...</p>
+                    </div>
+                    <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden border border-slate-800">
+                        <div id="sync-progress-bar" class="bg-amber-500 h-1.5 rounded-full transition-all duration-300" style="width: 20%"></div>
+                    </div>
+                    <p class="text-[10px] text-slate-500" id="sync-progress-text">Harap tunggu sebentar...</p>
                 </div>
             </div>
-        </div>
 
-        <!-- TOAST NOTIFICATION -->
-        <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 border border-amber-500/50 text-slate-100 px-4 py-2.5 rounded-xl shadow-xl text-xs flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none">
-            <i id="toast-icon" class="fa-solid fa-circle-check text-amber-400"></i>
-            <span id="toast-msg">Notifikasi</span>
-        </div>
+            <!-- PDF PREVIEW MODAL -->
+            <div id="pdf-preview-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-5 hidden">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+                    <div class="p-4 bg-slate-950 border-b border-slate-800 flex justify-between items-center shrink-0">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-file-pdf text-red-400 text-lg"></i>
+                            <div>
+                                <h3 class="text-xs font-bold text-slate-100">Pratinjau Laporan PDF</h3>
+                                <p class="text-[10px] text-slate-400">Performa & Ketepatan Laporan Upload</p>
+                            </div>
+                        </div>
+                        <button onclick="closePdfPreviewModal()" class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 hover:text-slate-100 flex items-center justify-center">
+                            <i class="fa-solid fa-xmark text-xs"></i>
+                        </button>
+                    </div>
 
-        <!-- FOOTER BRANDING -->
-        <footer class="bg-slate-900/90 py-2.5 px-4 text-center border-t border-slate-800 text-[10px] text-slate-500">
-            &copy; 2026 Batik Arizi Creator Management Tool
-        </footer>
+                    <div class="flex-1 overflow-y-auto p-4 bg-slate-950/60 space-y-3" id="pdf-preview-content">
+                        <!-- PDF Content -->
+                    </div>
+
+                    <div class="p-3 bg-slate-950 border-t border-slate-800 flex gap-2 shrink-0">
+                        <button onclick="closePdfPreviewModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition">
+                            Tutup
+                        </button>
+                        <button onclick="downloadPdfFromPreview()" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-download"></i> Unduh PDF Laporan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN PIN MODAL -->
+            <div id="admin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xs p-5 space-y-4 text-center shadow-2xl">
+                    <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 mx-auto flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="text-sm font-bold text-slate-100">Verifikasi Admin</h3>
+                        <p class="text-[11px] text-slate-400">Masukkan PIN Admin untuk mengakses panel master</p>
+                    </div>
+                    <div>
+                        <input type="password" id="admin-pin-input" maxlength="6" class="w-full bg-slate-950 border border-slate-700 rounded-xl py-2.5 px-3 text-center text-sm font-mono tracking-widest text-amber-400 focus:outline-none focus:border-amber-400" placeholder="••••••">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="closeAdminModal()" class="py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition">Batal</button>
+                        <button onclick="verifyAdminPin()" class="py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition">Masuk</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DUPLICATE ALERT MODAL -->
+            <div id="duplicate-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+                <div class="bg-slate-900 border border-red-500/40 rounded-2xl w-full max-w-xs p-5 space-y-3 text-center shadow-2xl">
+                    <div class="w-12 h-12 rounded-full bg-red-500/20 text-red-400 mx-auto flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-100">Link Sudah Ditemukan!</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed" id="duplicate-modal-msg">
+                        Link video yang Anda masukkan sudah pernah diinput sebelumnya.
+                    </p>
+                    <button onclick="closeDuplicateModal()" class="w-full py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl text-xs transition">
+                        Saya Mengerti & Perbaiki
+                    </button>
+                </div>
+            </div>
+
+            <!-- TOAST NOTIFICATION -->
+            <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 border border-amber-500/50 text-slate-100 px-4 py-2.5 rounded-xl shadow-xl text-xs flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none">
+                <i id="toast-icon" class="fa-solid fa-circle-check text-amber-400"></i>
+                <span id="toast-msg">Notifikasi</span>
+            </div>
+
+            <footer class="bg-slate-900/90 py-2.5 px-4 text-center border-t border-slate-800 text-[10px] text-slate-500">
+                &copy; 2026 Batik Arizi Creator Management Tool
+            </footer>
+        </main>
     </div>
 
     <script>
-        // SPREADSHEET CONFIGURATION LINK & WEBHOOK ENDPOINT
+        // TARGET SPREADSHEET URL
         const SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/15nhvuetas7kx5Ix6uOO-Rj3EcKaK8qwh9SGNZKDdYps/edit?usp=sharing";
         
-        // PASTE URL WEBHOOK APPS SCRIPT DI SINI BILA SUDAH DIDEPLOY
-        const GAS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbyCtlo88RO-W5U2Fu603OWnY9IjkGazMyvHfnUWOtyLgKbAoakT2Zcp6EyYbMc2bFfC/exec";
+        // =========================================================================
+        // URL WEB APP GOOGLE APPS SCRIPT DARI HASIL DEPLOYMENT SPREADSHEET:
+        // =========================================================================
+        const GAS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbx0nwd2SstDItZnUv72Ocl9RD8GyV_aTwcLYmNtbVKCFCRz0ROMfFQKmCcBoyY0C2o/exec";
         
-        // IN-MEMORY APP STATE (NO LOCALSTORAGE PERSISTENCE - DIRECT SYNC TO SPREADSHEET)
+        // APPLICATION IN-MEMORY STATE
         let currentUser = null;
         let usersData = [];
         let contentsData = [];
+        let rowCounter = 0;
+        let activePdfReportElement = null;
         
-        // ADMIN PIN
+        // ADMIN VERIFICATION PIN
         const ADMIN_PIN = "051017";
 
         window.onload = async function() {
-            // Initialize today's date in input form
-            document.getElementById('content-date').value = getTodayDateString();
+            const todayStr = getRealtimeDateString();
+            document.getElementById('content-date').value = todayStr;
+            document.getElementById('custom-view-date').value = todayStr;
             
-            // Set default date filter to current month
+            startRealtimeClock();
+            
             const now = new Date();
             const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
             const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
             document.getElementById('filter-start').value = startOfMonth;
             document.getElementById('filter-end').value = endOfMonth;
 
-            // Load GAS Code into Admin view
+            initLinkRows(3);
             populateGasCodeTextarea();
 
-            // Fetch live data directly from Spreadsheet GAS
             await fetchAllDataFromSpreadsheet();
-
-            // Default to Auth View on launch
             showAuthView();
         };
 
         function isValidGasUrl(url) {
             try {
+                if (!url || url.includes("PASTE_URL_WEB_APP_GAS_DI_SINI")) return false;
                 const parsed = new URL(url);
-                return (parsed.protocol === 'http:' || parsed.protocol === 'https:') && url !== "";
+                return (parsed.protocol === 'http:' || parsed.protocol === 'https:');
             } catch (e) {
                 return false;
             }
         }
 
+        function startRealtimeClock() {
+            function updateClock() {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const options = { day: '2-digit', month: 'short', year: 'numeric' };
+                const datePart = now.toLocaleDateString('id-ID', options);
+                
+                const clockEl = document.getElementById('realtime-clock-display');
+                if (clockEl) {
+                    clockEl.innerText = `${datePart} • ${hours}:${minutes}:${seconds} WIB`;
+                }
+            }
+            updateClock();
+            setInterval(updateClock, 1000);
+        }
+
+        function getRealtimeDateString() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function showSyncModal(title = "Menyinkronkan Data", subtitle = "Mengirim laporan ke Google Spreadsheet...") {
+            const modal = document.getElementById('sync-modal');
+            const titleEl = document.getElementById('sync-status-title');
+            const subtitleEl = document.getElementById('sync-status-subtitle');
+            const barEl = document.getElementById('sync-progress-bar');
+            
+            if (titleEl) titleEl.innerText = title;
+            if (subtitleEl) subtitleEl.innerText = subtitle;
+            if (barEl) barEl.style.width = '20%';
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function updateSyncProgress(percent, text) {
+            const barEl = document.getElementById('sync-progress-bar');
+            const textEl = document.getElementById('sync-progress-text');
+            if (barEl) barEl.style.width = `${percent}%`;
+            if (textEl && text) textEl.innerText = text;
+        }
+
+        function hideSyncModal() {
+            const modal = document.getElementById('sync-modal');
+            const barEl = document.getElementById('sync-progress-bar');
+            if (barEl) barEl.style.width = '100%';
+            setTimeout(() => {
+                if (modal) modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function openAdminModal() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+            document.getElementById('admin-pin-input').value = '';
+            document.getElementById('admin-pin-input').focus();
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function verifyAdminPin() {
+            const pin = document.getElementById('admin-pin-input').value;
+            if (pin === ADMIN_PIN) {
+                closeAdminModal();
+                showAdminDashboard();
+                showToast("Berhasil masuk sebagai Admin");
+            } else {
+                showToast("PIN Admin salah!", true);
+            }
+        }
+
+        function showAdminDashboard() {
+            document.getElementById('auth-view').classList.add('hidden');
+            document.getElementById('creator-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.remove('hidden');
+            document.getElementById('header-user-actions').classList.remove('hidden');
+            document.getElementById('current-user-badge').innerText = "Administrator";
+
+            renderAdminUsersTable();
+            renderAdminContentsList();
+        }
+
+        function closePdfPreviewModal() {
+            document.getElementById('pdf-preview-modal').classList.add('hidden');
+        }
+
+        function showDuplicateModal(msg) {
+            document.getElementById('duplicate-modal-msg').innerText = msg;
+            document.getElementById('duplicate-modal').classList.remove('hidden');
+        }
+
+        function closeDuplicateModal() {
+            document.getElementById('duplicate-modal').classList.add('hidden');
+        }
+
+        function initLinkRows(count = 3) {
+            const container = document.getElementById('multi-link-container');
+            container.innerHTML = '';
+            rowCounter = 0;
+            for(let i = 0; i < count; i++) {
+                addLinkRow();
+            }
+        }
+
+        function addLinkRow() {
+            const container = document.getElementById('multi-link-container');
+            const currentRows = container.querySelectorAll('.link-row').length;
+            if (currentRows >= 20) {
+                showToast("Maksimal 20 kolom link video!", true);
+                return;
+            }
+
+            rowCounter++;
+            const rowId = `row-${rowCounter}`;
+            const rowDiv = document.createElement('div');
+            rowDiv.className = "link-row bg-slate-900/90 border border-slate-800 p-2.5 rounded-xl space-y-2 relative";
+            rowDiv.id = rowId;
+
+            rowDiv.innerHTML = `
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-[10px] font-bold text-amber-400/90 font-mono">Link #${currentRows + 1}</span>
+                    ${currentRows > 0 ? `
+                        <button type="button" onclick="removeLinkRow('${rowId}')" class="text-slate-500 hover:text-red-400 text-xs px-1">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    ` : ''}
+                </div>
+                <input type="url" class="link-input w-full bg-slate-950 border border-slate-700 rounded-lg py-1.5 px-2.5 text-xs text-slate-100 focus:outline-none focus:border-amber-400 font-mono placeholder:text-slate-600" placeholder="https://vt.tiktok.com/..." oninput="updateRowCountBadge()">
+                <div class="flex items-center justify-between px-1">
+                    <div class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-basket-shopping text-amber-400 text-xs"></i>
+                        <span class="text-[10px] text-slate-300 font-medium">Keranjang Kuning</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="cart-toggle sr-only peer">
+                        <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                </div>
+            `;
+
+            container.appendChild(rowDiv);
+            updateRowCountBadge();
+        }
+
+        function removeLinkRow(rowId) {
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.remove();
+                reindexRowBadges();
+                updateRowCountBadge();
+            }
+        }
+
+        function reindexRowBadges() {
+            const rows = document.querySelectorAll('.link-row');
+            rows.forEach((r, idx) => {
+                const badge = r.querySelector('.font-mono');
+                if (badge) badge.innerText = `Link #${idx + 1}`;
+            });
+        }
+
+        function clearAllLinkInputs() {
+            initLinkRows(3);
+            updateRowCountBadge();
+        }
+
+        function updateRowCountBadge() {
+            const inputs = document.querySelectorAll('.link-input');
+            let filled = 0;
+            inputs.forEach(i => {
+                if (i.value.trim().length > 0) filled++;
+            });
+            document.getElementById('link-row-count-badge').innerText = `Terisi: ${filled} / ${inputs.length} (Max 20)`;
+        }
+
         async function fetchAllDataFromSpreadsheet() {
             if (!isValidGasUrl(GAS_WEBHOOK_URL)) {
-                console.log("GAS_WEBHOOK_URL belum diisi. Paste URL Web App pada file HTML untuk sinkronisasi live.");
+                console.log("Informasi: Webhook URL GAS belum dikonfigurasi. Menampilkan UI.");
                 populateUserDropdown();
                 return;
             }
 
             try {
-                showToast("Memuat data dari Spreadsheet...");
+                showSyncModal("Memuat Data Spreadsheet", "Mengambil data kreator & konten terbaru...");
+                updateSyncProgress(40, "Menghubungkan ke server...");
+
                 const response = await fetch(`${GAS_WEBHOOK_URL}?action=getData`);
+                updateSyncProgress(80, "Memproses data...");
+
                 const result = await response.json();
 
                 if (result.status === 'success') {
@@ -445,12 +700,13 @@
             } catch (err) {
                 console.error("Gagal mengambil data dari Spreadsheet:", err);
                 showToast("Gagal menyambung ke Spreadsheet", true);
+            } finally {
+                hideSyncModal();
             }
         }
 
         async function syncToSpreadsheet(actionType, payload) {
             if (!isValidGasUrl(GAS_WEBHOOK_URL)) {
-                console.log("GAS_WEBHOOK_URL belum diisi. Perubahan tersimpan di memori aktif.");
                 return { status: "success" };
             }
             
@@ -467,8 +723,117 @@
             }
         }
 
+        async function handleAddBatchContent(e) {
+            e.preventDefault();
+            const dateInput = document.getElementById('content-date').value;
+            const linkInputs = document.querySelectorAll('.link-input');
+            const cartToggles = document.querySelectorAll('.cart-toggle');
+
+            const batchToAdd = [];
+            const localDuplicatesInForm = new Set();
+
+            for (let i = 0; i < linkInputs.length; i++) {
+                const linkVal = linkInputs[i].value.trim();
+                if (!linkVal) continue;
+
+                const lowerLink = linkVal.toLowerCase();
+
+                if (localDuplicatesInForm.has(lowerLink)) {
+                    showDuplicateModal(`Terdeteksi link ganda dalam form upload Anda:\n\n${linkVal}\n\nLink ganda tidak akan disimpan.`);
+                    return;
+                }
+                localDuplicatesInForm.add(lowerLink);
+
+                const existingInDb = contentsData.find(c => c.link.toLowerCase() === lowerLink);
+                if (existingInDb) {
+                    showDuplicateModal(`Link video berikut sudah pernah dimasukkan sebelumnya oleh ${existingInDb.creatorName}:\n\n${linkVal}\n\nData link tidak terhitung dan tidak tersimpan di spreadsheet.`);
+                    return;
+                }
+
+                batchToAdd.push({
+                    id: 'cnt_' + Date.now() + '_' + i,
+                    creatorEmail: currentUser.email,
+                    creatorName: currentUser.name,
+                    link: linkVal,
+                    date: dateInput,
+                    hasCart: cartToggles[i].checked,
+                    createdAt: new Date().toISOString()
+                });
+            }
+
+            if (batchToAdd.length === 0) {
+                showToast("Silakan isi minimal satu link video!", true);
+                return;
+            }
+
+            showSyncModal("Mengirim Laporan", `Menyimpan ${batchToAdd.length} link video ke Spreadsheet...`);
+            updateSyncProgress(25, "Mempersiapkan data...");
+
+            let successCount = 0;
+            for (let i = 0; i < batchToAdd.length; i++) {
+                const item = batchToAdd[i];
+                await syncToSpreadsheet("addContent", { content: item });
+                contentsData.unshift(item);
+                successCount++;
+                const progress = Math.round(25 + ((i + 1) / batchToAdd.length) * 70);
+                updateSyncProgress(progress, `Tersimpan ${i + 1} dari ${batchToAdd.length}...`);
+            }
+
+            updateSyncProgress(100, "Selesai!");
+            setTimeout(() => {
+                hideSyncModal();
+                clearAllLinkInputs();
+                showToast(`${successCount} Video berhasil tersimpan!`);
+                renderCreatorDashboard();
+            }, 300);
+        }
+
+        function renderCreatorDashboard() {
+            if (!currentUser) return;
+
+            const myContents = contentsData.filter(c => c.creatorEmail === currentUser.email);
+
+            const todayStr = getRealtimeDateString();
+            document.getElementById('today-date-text').innerText = formatDateReadable(todayStr);
+
+            const todayContents = myContents.filter(c => c.date === todayStr);
+            const todayCount = todayContents.length;
+            document.getElementById('today-count').innerText = todayCount;
+
+            const progressPct = Math.min((todayCount / 8) * 100, 100);
+            document.getElementById('today-progress-bar').style.width = `${progressPct}%`;
+
+            const statusMsg = document.getElementById('target-status-msg');
+            if (todayCount >= 8) {
+                statusMsg.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> Target harian tercapai! (${todayCount} video)`;
+            } else {
+                statusMsg.innerHTML = `<i class="fa-solid fa-circle-info text-amber-400"></i> Kurang ${8 - todayCount} video untuk mencapai target 8.`;
+            }
+
+            renderCustomDateCard();
+            calculatePerformanceMetrics(myContents);
+            renderCreatorHistory();
+        }
+
+        function renderCustomDateCard() {
+            if (!currentUser) return;
+            const selectedDate = document.getElementById('custom-view-date').value;
+            
+            const myContents = contentsData.filter(c => c.creatorEmail === currentUser.email);
+            const dateFilteredContents = myContents.filter(c => c.date === selectedDate);
+            
+            const totalCount = dateFilteredContents.length;
+            const cartCount = dateFilteredContents.filter(c => c.hasCart).length;
+            const nonCartCount = totalCount - cartCount;
+
+            document.getElementById('custom-date-count').innerText = `${totalCount} Video`;
+            document.getElementById('custom-cart-count').innerText = `${cartCount} Video`;
+            document.getElementById('custom-noncart-count').innerText = `${nonCartCount} Video`;
+        }
+
         function populateUserDropdown() {
             const selectEl = document.getElementById('login-user-select');
+            if (!selectEl) return;
             selectEl.innerHTML = '';
 
             if (usersData.length === 0) {
@@ -477,94 +842,11 @@
             }
 
             selectEl.innerHTML = `<option value="" disabled selected>-- Pilih Nama Kreator --</option>` + 
-                usersData.map(u => `<option value="${u.email}">${u.name} (${u.email})</option>`).join('');
-        }
-
-        function getTodayDateString() {
-            const today = new Date();
-            return today.toISOString().split('T')[0];
-        }
-
-        function formatDateReadable(dateStr) {
-            if(!dateStr) return '';
-            const [y, m, d] = dateStr.split('-');
-            return `${d}/${m}/${y}`;
-        }
-
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toast-msg');
-            const toastIcon = document.getElementById('toast-icon');
-
-            toastMsg.innerText = message;
-            if(isError) {
-                toastIcon.className = "fa-solid fa-circle-xmark text-red-400";
-            } else {
-                toastIcon.className = "fa-solid fa-circle-check text-amber-400";
-            }
-
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
-        }
-
-        function toggleAuthMode() {
-            const loginForm = document.getElementById('login-form');
-            const regForm = document.getElementById('register-form');
-            const authTitle = document.getElementById('auth-title');
-            const authSubtitle = document.getElementById('auth-subtitle');
-            const toggleBtn = document.getElementById('toggle-auth-btn');
-
-            if (loginForm.classList.contains('hidden')) {
-                loginForm.classList.remove('hidden');
-                regForm.classList.add('hidden');
-                authTitle.innerText = "Masuk Kreator";
-                authSubtitle.innerText = "Pilih nama akun Anda dari dropdown dan masukkan password";
-                toggleBtn.innerText = "Belum punya akun? Daftar";
-            } else {
-                loginForm.classList.add('hidden');
-                regForm.classList.remove('hidden');
-                authTitle.innerText = "Pendaftaran Kreator Baru";
-                authSubtitle.innerText = "Lengkapi data diri dan masukkan PIN verifikasi Admin";
-                toggleBtn.innerText = "Sudah punya akun? Masuk";
-            }
-        }
-
-        async function handleRegister(e) {
-            e.preventDefault();
-            const pin = document.getElementById('reg-admin-pin').value;
-            if (pin !== ADMIN_PIN) {
-                showToast("PIN Admin Pendaftaran salah!", true);
-                return;
-            }
-
-            const email = document.getElementById('reg-email').value.trim().toLowerCase();
-            const existing = usersData.find(u => u.email === email);
-            if (existing) {
-                showToast("Email sudah terdaftar!", true);
-                return;
-            }
-
-            const newUser = {
-                id: 'usr_' + Date.now(),
-                name: document.getElementById('reg-name').value.trim(),
-                dob: document.getElementById('reg-dob').value,
-                phone: document.getElementById('reg-phone').value.trim(),
-                address: document.getElementById('reg-address').value.trim(),
-                email: email,
-                password: document.getElementById('reg-password').value,
-                registeredAt: new Date().toISOString()
-            };
-
-            showToast("Mendaftarkan & menyinkronkan...");
-            await syncToSpreadsheet("registerUser", { user: newUser });
-            usersData.push(newUser);
-            populateUserDropdown();
-
-            currentUser = newUser;
-            showToast("Pendaftaran berhasil!");
-            showCreatorDashboard();
+                usersData.map(u => {
+                    const creatorName = u.name || u.Name || u.nama || u.Nama || 'Tanpa Nama';
+                    const creatorEmail = u.email || u.Email || '';
+                    return `<option value="${creatorEmail}">${creatorName} — (${creatorEmail})</option>`;
+                }).join('');
         }
 
         function handleLogin(e) {
@@ -577,13 +859,18 @@
                 return;
             }
 
-            const user = usersData.find(u => u.email === selectedEmail && u.password === password);
+            const user = usersData.find(u => (u.email === selectedEmail || u.Email === selectedEmail) && (u.password === password || u.Password === password));
             if (!user) {
                 showToast("Password salah!", true);
                 return;
             }
 
-            currentUser = user;
+            currentUser = {
+                name: user.name || user.Name,
+                email: user.email || user.Email,
+                phone: user.phone || user.Phone || '',
+                address: user.address || user.Address || ''
+            };
             showToast(`Selamat datang, ${currentUser.name}!`);
             showCreatorDashboard();
         }
@@ -612,444 +899,554 @@
             renderCreatorDashboard();
         }
 
-        async function handleAddContent(e) {
-            e.preventDefault();
-            const linkInput = document.getElementById('content-link').value.trim();
-            const dateInput = document.getElementById('content-date').value;
-            const hasCart = document.getElementById('content-cart-toggle').checked;
-
-            if (!linkInput) return;
-
-            // DONT ALLOW DUPLICATE VIDEO LINKS (CHECK ACROSS ALL CONTENTS)
-            const isDuplicate = contentsData.some(c => c.link.toLowerCase() === linkInput.toLowerCase());
-            if (isDuplicate) {
-                showToast("Link video ini sudah pernah dimasukkan sebelumnya!", true);
-                return;
-            }
-
-            const newContent = {
-                id: 'cnt_' + Date.now(),
-                creatorEmail: currentUser.email,
-                creatorName: currentUser.name,
-                link: linkInput,
-                date: dateInput,
-                hasCart: hasCart,
-                createdAt: new Date().toISOString()
-            };
-
-            showToast("Mengirim laporan ke Spreadsheet...");
-            await syncToSpreadsheet("addContent", { content: newContent });
-            contentsData.unshift(newContent);
-
-            // Reset Form
-            document.getElementById('content-link').value = '';
-            document.getElementById('content-cart-toggle').checked = false;
-
-            showToast("Laporan konten berhasil ditambahkan!");
-            renderCreatorDashboard();
-        }
-
-        function renderCreatorDashboard() {
-            if (!currentUser) return;
-
-            // ISOLATED USER DATA FILTER (CREATORS ONLY SEE THEIR OWN DATA)
-            const myContents = contentsData.filter(c => c.creatorEmail === currentUser.email);
-
-            // DAILY TARGET SUMMARY
-            const todayStr = getTodayDateString();
-            document.getElementById('today-date-text').innerText = formatDateReadable(todayStr);
-
-            const todayContents = myContents.filter(c => c.date === todayStr);
-            const todayCount = todayContents.length;
-            document.getElementById('today-count').innerText = todayCount;
-
-            const progressPct = Math.min((todayCount / 8) * 100, 100);
-            document.getElementById('today-progress-bar').style.width = `${progressPct}%`;
-
-            const statusMsg = document.getElementById('target-status-msg');
-            if (todayCount >= 8) {
-                statusMsg.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> Target harian tercapai! (${todayCount} video)`;
-            } else {
-                statusMsg.innerHTML = `<i class="fa-solid fa-circle-info text-amber-400"></i> Kurang ${8 - todayCount} video untuk mencapai target 8.`;
-            }
-
-            // WEEKLY & MONTHLY PERFORMANCE RECAP
-            calculatePerformanceMetrics(myContents);
-
-            // HISTORY TABLE RENDER
-            renderCreatorHistory();
-        }
-
         function calculatePerformanceMetrics(myContents) {
-            const now = new Date();
-            
-            // Weekly Range (Monday to Sunday)
-            const currentDay = now.getDay();
-            const diffToMon = now.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
-            const mon = new Date(now.setDate(diffToMon));
-            const sun = new Date(now.setDate(mon.getDate() + 6));
-            
-            const weeklyStartStr = mon.toISOString().split('T')[0];
-            const weeklyEndStr = sun.toISOString().split('T')[0];
+            const today = new Date();
 
-            document.getElementById('weekly-range').innerText = `${formatDateReadable(weeklyStartStr)} - ${formatDateReadable(weeklyEndStr)}`;
+            const weekAgo = new Date(today);
+            weekAgo.setDate(today.getDate() - 6);
+            const startWeekStr = weekAgo.toISOString().split('T')[0];
+            const endWeekStr = today.toISOString().split('T')[0];
 
-            const weeklyContents = myContents.filter(c => c.date >= weeklyStartStr && c.date <= weeklyEndStr);
-            const weeklyCount = weeklyContents.length;
-            document.getElementById('weekly-count').innerText = `${weeklyCount} Video`;
+            document.getElementById('weekly-range').innerText = `${formatDateReadable(startWeekStr)} - ${formatDateReadable(endWeekStr)}`;
 
-            // Weekly Target Accuracy: Total Target for 7 days = 7 * 8 = 56 videos
-            const weeklyTarget = 7 * 8;
-            const weeklyAccuracy = Math.min(Math.round((weeklyCount / weeklyTarget) * 100), 100);
-            document.getElementById('weekly-acc').innerText = `${weeklyAccuracy}%`;
+            const weeklyContents = myContents.filter(c => c.date >= startWeekStr && c.date <= endWeekStr);
+            document.getElementById('weekly-count').innerText = `${weeklyContents.length} Video`;
 
-            // Monthly Range
-            const firstDayMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-            const lastDayMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
-            const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const weeklyAcc = Math.min(Math.round((weeklyContents.length / 56) * 100), 100);
+            document.getElementById('weekly-acc').innerText = `${weeklyAcc}%`;
 
-            document.getElementById('monthly-range').innerText = `${formatDateReadable(firstDayMonth)} - ${formatDateReadable(lastDayMonth)}`;
+            const startMonthStr = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            const endMonthStr = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+            const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
 
-            const monthlyContents = myContents.filter(c => c.date >= firstDayMonth && c.date <= lastDayMonth);
-            const monthlyCount = monthlyContents.length;
-            document.getElementById('monthly-count').innerText = `${monthlyCount} Video`;
+            document.getElementById('monthly-range').innerText = `${formatDateReadable(startMonthStr)} - ${formatDateReadable(endMonthStr)}`;
 
-            // Monthly Target Accuracy: total Days * 8
-            const monthlyTarget = totalDaysInMonth * 8;
-            const monthlyAccuracy = Math.min(Math.round((monthlyCount / monthlyTarget) * 100), 100);
-            document.getElementById('monthly-acc').innerText = `${monthlyAccuracy}%`;
+            const monthlyContents = myContents.filter(c => c.date >= startMonthStr && c.date <= endMonthStr);
+            document.getElementById('monthly-count').innerText = `${monthlyContents.length} Video`;
+
+            const monthlyTarget = daysInMonth * 8;
+            const monthlyAcc = Math.min(Math.round((monthlyContents.length / monthlyTarget) * 100), 100);
+            document.getElementById('monthly-acc').innerText = `${monthlyAcc}%`;
         }
 
         function renderCreatorHistory() {
-            const start = document.getElementById('filter-start').value;
-            const end = document.getElementById('filter-end').value;
+            if (!currentUser) return;
+            const listEl = document.getElementById('creator-history-list');
+            const startDate = document.getElementById('filter-start').value;
+            const endDate = document.getElementById('filter-end').value;
 
             const myContents = contentsData.filter(c => {
                 if (c.creatorEmail !== currentUser.email) return false;
-                if (start && c.date < start) return false;
-                if (end && c.date > end) return false;
+                if (startDate && c.date < startDate) return false;
+                if (endDate && c.date > endDate) return false;
                 return true;
             });
 
-            const historyContainer = document.getElementById('creator-history-list');
             if (myContents.length === 0) {
-                historyContainer.innerHTML = `<p class="text-center text-slate-500 text-xs py-4">Belum ada data konten pada rentang ini.</p>`;
+                listEl.innerHTML = `<div class="text-center py-6 text-xs text-slate-500">Tidak ada konten ditemukan pada rentang tanggal ini.</div>`;
                 return;
             }
 
-            historyContainer.innerHTML = myContents.map(c => `
-                <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex items-center justify-between">
-                    <div class="space-y-1 overflow-hidden pr-2">
+            listEl.innerHTML = myContents.map(c => `
+                <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex justify-between items-center text-xs">
+                    <div class="space-y-1 min-w-0 pr-2">
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-300">${formatDateReadable(c.date)}</span>
-                            ${c.hasCart 
-                                ? `<span class="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded flex items-center gap-1"><i class="fa-solid fa-basket-shopping text-[8px]"></i> Keranjang Kuning</span>`
-                                : `<span class="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">Non-Keranjang</span>`
+                            <span class="text-[10px] text-slate-400 font-mono"><i class="fa-solid fa-calendar text-amber-500/70"></i> ${formatDateReadable(c.date)}</span>
+                            ${c.hasCart ? 
+                                `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                                    <i class="fa-solid fa-cart-shopping"></i> Keranjang
+                                </span>` : 
+                                `<span class="px-2 py-0.5 rounded-full text-[9px] font-medium bg-slate-800 text-slate-400 border border-slate-700">Non-Keranjang</span>`
                             }
                         </div>
-                        <a href="${c.link}" target="_blank" class="text-xs text-amber-400 hover:underline truncate block max-w-[240px]">
-                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px] mr-1"></i>${c.link}
+                        <a href="${c.link}" target="_blank" class="text-slate-200 hover:text-amber-400 truncate block font-mono text-[11px] underline">
+                            ${c.link}
                         </a>
                     </div>
-                    <button onclick="deleteContent('${c.id}')" class="text-slate-600 hover:text-red-400 p-1.5 transition" title="Hapus">
-                        <i class="fa-solid fa-trash-can text-xs"></i>
-                    </button>
+                    <a href="${c.link}" target="_blank" class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500 flex items-center justify-center shrink-0 transition">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                    </a>
                 </div>
             `).join('');
         }
 
-        async function deleteContent(id) {
-            if (confirm("Hapus laporan konten ini?")) {
-                showToast("Menghapus laporan...");
-                await syncToSpreadsheet("deleteContent", { id: id });
-                contentsData = contentsData.filter(c => c.id !== id);
-                showToast("Laporan konten dihapus");
-                renderCreatorDashboard();
+        function previewPdfReport() {
+            if (!currentUser) {
+                showToast("Silakan masuk terlebih dahulu!", true);
+                return;
             }
-        }
 
-        function exportPdfReport() {
-            const start = document.getElementById('filter-start').value;
-            const end = document.getElementById('filter-end').value;
+            const startDate = document.getElementById('filter-start').value;
+            const endDate = document.getElementById('filter-end').value;
 
-            const filteredContents = contentsData.filter(c => {
+            if (!startDate || !endDate) {
+                showToast("Pilih rentang tanggal terlebih dahulu!", true);
+                return;
+            }
+
+            const myContents = contentsData.filter(c => {
                 if (c.creatorEmail !== currentUser.email) return false;
-                if (start && c.date < start) return false;
-                if (end && c.date > end) return false;
+                if (startDate && c.date < startDate) return false;
+                if (endDate && c.date > endDate) return false;
                 return true;
             });
 
-            const totalUploaded = filteredContents.length;
-            const cartCount = filteredContents.filter(c => c.hasCart).length;
-            const nonCartCount = totalUploaded - cartCount;
+            const cartCount = myContents.filter(c => c.hasCart).length;
 
-            const reportElement = document.createElement('div');
-            reportElement.style.padding = '20px';
-            reportElement.style.fontFamily = 'sans-serif';
-            reportElement.style.color = '#1e293b';
-            reportElement.style.backgroundColor = '#ffffff';
+            const dateList = [];
+            let curr = new Date(startDate);
+            const last = new Date(endDate);
+            while (curr <= last) {
+                dateList.push(curr.toISOString().split('T')[0]);
+                curr.setDate(curr.getDate() + 1);
+            }
 
-            reportElement.innerHTML = `
-                <div style="border-bottom: 2px solid #d4af37; padding-bottom: 10px; margin-bottom: 15px;">
-                    <h1 style="font-size: 18px; margin:0; color: #0f172a;">BATIK ARIZI - LAPORAN PERFORMA KONTEN KREATOR</h1>
-                    <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">Rentang Tanggal: ${formatDateReadable(start)} s/d ${formatDateReadable(end)}</p>
+            const dailyStats = dateList.map(dStr => {
+                const dayContents = myContents.filter(c => c.date === dStr);
+                const count = dayContents.length;
+                const accuracy = Math.min(Math.round((count / 8) * 100), 100);
+                return { date: dStr, count, accuracy, items: dayContents };
+            });
+
+            const totalTargetDays = dateList.length;
+            const avgAccuracy = totalTargetDays > 0 ? 
+                Math.round(dailyStats.reduce((acc, curr) => acc + curr.accuracy, 0) / totalTargetDays) : 0;
+
+            const element = document.createElement('div');
+            element.className = "p-4 bg-white text-slate-900 text-xs space-y-4 font-sans rounded-xl shadow";
+            
+            element.innerHTML = `
+                <div style="border-bottom: 2px solid #1E293B; padding-bottom: 8px;">
+                    <h2 style="font-size: 15px; font-weight: bold; color: #0F172A; text-transform: uppercase; margin:0;">BATIK ARIZI - LAPORAN KETEPATAN KONTEN KREATOR</h2>
+                    <p style="font-size: 9px; color: #64748B; margin-top:2px;">Dicetak Pada: ${new Date().toLocaleString('id-ID')}</p>
+                </div>
+                
+                <div style="background-color: #F8FAFC; padding: 10px; border-radius: 8px; border: 1px solid #E2E8F0; font-size: 10px; line-height: 1.5;">
+                    <p style="margin:2px 0;"><strong>Nama Kreator:</strong> ${currentUser.name}</p>
+                    <p style="margin:2px 0;"><strong>Email:</strong> ${currentUser.email}</p>
+                    <p style="margin:2px 0;"><strong>No. WA:</strong> ${currentUser.phone || '-'}</p>
+                    <p style="margin:2px 0;"><strong>Periode Laporan:</strong> ${formatDateReadable(startDate)} s/d ${formatDateReadable(endDate)}</p>
                 </div>
 
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
-                    <h3 style="font-size: 12px; margin: 0 0 8px 0; color: #0f172a;">IDENTITAS KREATOR</h3>
-                    <table style="font-size: 11px; width: 100%;">
-                        <tr><td style="width: 100px; color: #64748b;">Nama</td><td>: <b>${currentUser.name}</b></td></tr>
-                        <tr><td style="color: #64748b;">Email</td><td>: ${currentUser.email}</td></tr>
-                        <tr><td style="color: #64748b;">WhatsApp</td><td>: ${currentUser.phone}</td></tr>
-                    </table>
-                </div>
-
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <div style="flex: 1; background: #fffbe2; border: 1px solid #fef08a; padding: 10px; border-radius: 6px; text-align: center;">
-                        <span style="font-size: 10px; color: #854d0e;">TOTAL KONTEN</span>
-                        <div style="font-size: 18px; font-weight: bold; color: #a16207;">${totalUploaded}</div>
+                <div style="display: flex; gap: 6px; text-align: center;">
+                    <div style="flex:1; background-color: #FEF3C7; border:1px solid #FCD34D; padding:6px; border-radius:6px;">
+                        <span style="font-size: 8px; color: #92400E; display:block;">Total Terupload</span>
+                        <strong style="font-size: 12px; color: #78350F;">${myContents.length} Video</strong>
                     </div>
-                    <div style="flex: 1; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px; border-radius: 6px; text-align: center;">
-                        <span style="font-size: 10px; color: #166534;">KERANJANG KUNING</span>
-                        <div style="font-size: 18px; font-weight: bold; color: #15803d;">${cartCount}</div>
+                    <div style="flex:1; background-color: #ECFDF5; border:1px solid #6EE7B7; padding:6px; border-radius:6px;">
+                        <span style="font-size: 8px; color: #065F46; display:block;">Keranjang Kuning</span>
+                        <strong style="font-size: 12px; color: #047857;">${cartCount} Video</strong>
                     </div>
-                    <div style="flex: 1; background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; text-align: center;">
-                        <span style="font-size: 10px; color: #475569;">NON KERANJANG</span>
-                        <div style="font-size: 18px; font-weight: bold; color: #334155;">${nonCartCount}</div>
+                    <div style="flex:1; background-color: #EFF6FF; border:1px solid #93C5FD; padding:6px; border-radius:6px;">
+                        <span style="font-size: 8px; color: #1E40AF; display:block;">Rata-rata Ketepatan Target</span>
+                        <strong style="font-size: 12px; color: #1E3A8A;">${avgAccuracy}%</strong>
                     </div>
                 </div>
 
-                <h3 style="font-size: 12px; margin-bottom: 6px;">DAFTAR UPLOAD KONTEN</h3>
-                <table style="width: 100%; border-collapse: collapse; font-size: 10px; text-align: left;">
+                <div style="border: 1px solid #E2E8F0; padding: 10px; border-radius: 8px; background: #FAF5FF;">
+                    <h4 style="font-weight: bold; font-size: 10px; color: #581C87; margin-bottom: 6px;">
+                        <i class="fa-solid fa-chart-column"></i> Grafik Ketepatan Target & Jumlah Konten
+                    </h4>
+                    <div style="position: relative; width: 100%; height: 130px;">
+                        <canvas id="pdf-chart-canvas" width="400" height="130"></canvas>
+                    </div>
+                </div>
+
+                <h3 style="font-weight: bold; font-size: 11px; color: #0F172A; border-bottom: 1px solid #CBD5E1; padding-bottom: 3px; margin-bottom: 4px;">
+                    Rincian Upload Konten & Jam Input (${myContents.length} Video)
+                </h3>
+                
+                <table style="width: 100%; border-collapse: collapse; font-size: 8.5px;">
                     <thead>
-                        <tr style="background: #0f172a; color: #ffffff;">
-                            <th style="padding: 6px; border: 1px solid #334155;">No</th>
-                            <th style="padding: 6px; border: 1px solid #334155;">Tanggal</th>
-                            <th style="padding: 6px; border: 1px solid #334155;">Kategori</th>
-                            <th style="padding: 6px; border: 1px solid #334155;">Link Video</th>
+                        <tr style="background-color: #F1F5F9; text-align: left;">
+                            <th style="padding: 4px; border: 1px solid #CBD5E1;">No</th>
+                            <th style="padding: 4px; border: 1px solid #CBD5E1;">Tgl Konten</th>
+                            <th style="padding: 4px; border: 1px solid #CBD5E1;">Jam Input Laporan</th>
+                            <th style="padding: 4px; border: 1px solid #CBD5E1;">Kategori</th>
+                            <th style="padding: 4px; border: 1px solid #CBD5E1;">Link Video</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${filteredContents.map((c, idx) => `
-                            <tr>
-                                <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: center;">${idx + 1}</td>
-                                <td style="padding: 6px; border: 1px solid #e2e8f0;">${formatDateReadable(c.date)}</td>
-                                <td style="padding: 6px; border: 1px solid #e2e8f0;">${c.hasCart ? 'Keranjang Kuning' : 'Non-Keranjang'}</td>
-                                <td style="padding: 6px; border: 1px solid #e2e8f0; word-break: break-all; color: #2563eb;">${c.link}</td>
-                            </tr>
-                        `).join('')}
+                        ${myContents.length === 0 ? `
+                            <tr><td colspan="5" style="padding: 8px; text-align: center; color: #94A3B8;">Tidak ada data konten</td></tr>
+                        ` : myContents.map((c, idx) => {
+                            const timeFormatted = c.createdAt ? new Date(c.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-';
+                            return `
+                                <tr>
+                                    <td style="padding: 3px 4px; border: 1px solid #CBD5E1;">${idx + 1}</td>
+                                    <td style="padding: 3px 4px; border: 1px solid #CBD5E1;">${formatDateReadable(c.date)}</td>
+                                    <td style="padding: 3px 4px; border: 1px solid #CBD5E1; color: #D97706; font-weight: bold;">${timeFormatted} WIB</td>
+                                    <td style="padding: 3px 4px; border: 1px solid #CBD5E1;">${c.hasCart ? 'Keranjang Kuning' : 'Non-Keranjang'}</td>
+                                    <td style="padding: 3px 4px; border: 1px solid #CBD5E1; word-break: break-all; font-family: monospace;">${c.link}</td>
+                                </tr>
+                            `;
+                        }).join('')}
                     </tbody>
                 </table>
             `;
 
+            activePdfReportElement = element;
+
+            const previewContainer = document.getElementById('pdf-preview-content');
+            previewContainer.innerHTML = '';
+            previewContainer.appendChild(element);
+
+            document.getElementById('pdf-preview-modal').classList.remove('hidden');
+            setTimeout(() => drawPerformanceChart(dailyStats), 100);
+        }
+
+        function downloadPdfFromPreview() {
+            if (!activePdfReportElement) {
+                showToast("Laporan PDF belum siap!", true);
+                return;
+            }
+
+            showSyncModal("Mengunduh PDF", "Membuat berkas PDF laporan Anda...");
+            updateSyncProgress(40, "Mengonversi ke dokumen...");
+
             const opt = {
-                margin:       10,
-                filename:     `Laporan_BatikArizi_${currentUser.name.replace(/\s+/g, '_')}_${start}_${end}.pdf`,
+                margin:       [0.3, 0.3, 0.3, 0.3],
+                filename:     `Laporan_Kreator_${currentUser ? currentUser.name.replace(/\s+/g, '_') : 'BatikArizi'}_${getRealtimeDateString()}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(reportElement).save();
-            showToast("Memproses download PDF...");
+            html2pdf().set(opt).from(activePdfReportElement).save().then(() => {
+                updateSyncProgress(100, "PDF Berhasil Diunduh!");
+                setTimeout(() => {
+                    hideSyncModal();
+                    showToast("Laporan PDF berhasil diunduh!");
+                }, 400);
+            }).catch(err => {
+                console.error("Gagal mengeksport PDF:", err);
+                hideSyncModal();
+                showToast("Gagal mengunduh PDF!", true);
+            });
         }
 
-        function openAdminModal() {
-            document.getElementById('admin-pin-input').value = '';
-            document.getElementById('admin-modal').classList.remove('hidden');
-        }
+        function drawPerformanceChart(dailyStats) {
+            const canvas = document.getElementById('pdf-chart-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
 
-        function closeAdminModal() {
-            document.getElementById('admin-modal').classList.add('hidden');
-        }
+            ctx.clearRect(0, 0, w, h);
+            if (dailyStats.length === 0) return;
 
-        function verifyAdminPin() {
-            const inputPin = document.getElementById('admin-pin-input').value;
-            if (inputPin === ADMIN_PIN) {
-                closeAdminModal();
-                showAdminDashboard();
-                showToast("Akses Admin Diberikan");
-            } else {
-                showToast("PIN Admin Salah!", true);
+            const padding = 25;
+            const chartW = w - padding * 2;
+            const chartH = h - padding * 2;
+
+            ctx.strokeStyle = '#E2E8F0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = padding + (chartH / 4) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(w - padding, y);
+                ctx.stroke();
             }
+
+            const stepX = dailyStats.length > 1 ? chartW / (dailyStats.length - 1) : chartW;
+            const barWidth = Math.max(6, Math.min(20, (chartW / dailyStats.length) * 0.4));
+
+            dailyStats.forEach((st, idx) => {
+                const x = dailyStats.length > 1 ? padding + idx * stepX : w / 2;
+                
+                const maxCount = 12;
+                const barH = (Math.min(st.count, maxCount) / maxCount) * chartH;
+                const barY = padding + chartH - barH;
+
+                ctx.fillStyle = '#D97706';
+                ctx.fillRect(x - barWidth / 2, barY, barWidth, barH);
+
+                ctx.fillStyle = '#451A03';
+                ctx.font = '8px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${st.count}`, x, barY - 2);
+
+                ctx.fillStyle = '#64748B';
+                ctx.font = '7px sans-serif';
+                const dayLabel = st.date.split('-')[2];
+                ctx.fillText(dayLabel, x, h - 5);
+            });
+
+            ctx.strokeStyle = '#2563EB';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            dailyStats.forEach((st, idx) => {
+                const x = dailyStats.length > 1 ? padding + idx * stepX : w / 2;
+                const y = padding + chartH - (st.accuracy / 100) * chartH;
+                if (idx === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
         }
 
-        function showAdminDashboard() {
-            document.getElementById('auth-view').classList.add('hidden');
-            document.getElementById('creator-view').classList.add('hidden');
-            document.getElementById('admin-view').classList.remove('hidden');
+        function renderAdminUsersTable() {
+            const tbody = document.getElementById('admin-users-table');
+            if (!tbody) return;
 
-            renderAdminData();
-        }
-
-        function exitAdminView() {
-            if (currentUser) {
-                showCreatorDashboard();
-            } else {
-                showAuthView();
-            }
-        }
-
-        function switchAdminTab(tabName) {
-            document.getElementById('admin-tab-users').classList.add('hidden');
-            document.getElementById('admin-tab-contents').classList.add('hidden');
-            document.getElementById('admin-tab-gas').classList.add('hidden');
-
-            document.getElementById('tab-users-btn').className = "flex-1 py-2 text-center text-xs font-semibold text-slate-400 border-b-2 border-transparent";
-            document.getElementById('tab-contents-btn').className = "flex-1 py-2 text-center text-xs font-semibold text-slate-400 border-b-2 border-transparent";
-            document.getElementById('tab-gas-btn').className = "flex-1 py-2 text-center text-xs font-semibold text-slate-400 border-b-2 border-transparent";
-
-            if (tabName === 'users') {
-                document.getElementById('admin-tab-users').classList.remove('hidden');
-                document.getElementById('tab-users-btn').className = "flex-1 py-2 text-center text-xs font-semibold text-amber-400 border-b-2 border-amber-400";
-            } else if (tabName === 'contents') {
-                document.getElementById('admin-tab-contents').classList.remove('hidden');
-                document.getElementById('tab-contents-btn').className = "flex-1 py-2 text-center text-xs font-semibold text-amber-400 border-b-2 border-amber-400";
-            } else if (tabName === 'gas') {
-                document.getElementById('admin-tab-gas').classList.remove('hidden');
-                document.getElementById('tab-gas-btn').className = "flex-1 py-2 text-center text-xs font-semibold text-amber-400 border-b-2 border-amber-400";
-            }
-        }
-
-        function renderAdminData() {
-            // Render Users
-            const usersTableBody = document.getElementById('admin-users-table');
             if (usersData.length === 0) {
-                usersTableBody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-slate-500">Belum ada user terdaftar.</td></tr>`;
-            } else {
-                usersTableBody.innerHTML = usersData.map(u => `
-                    <tr class="hover:bg-slate-800/40">
-                        <td class="p-2 font-medium text-slate-100">${u.name}</td>
-                        <td class="p-2 text-slate-400">${u.email}</td>
-                        <td class="p-2 text-slate-400">${u.phone}</td>
-                        <td class="p-2 text-slate-400">${u.address}</td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-slate-500">Belum ada user registered</td></tr>`;
+                return;
             }
 
-            // Render All Contents
-            const adminContentsList = document.getElementById('admin-contents-list');
+            tbody.innerHTML = usersData.map(u => `
+                <tr class="hover:bg-slate-800/40">
+                    <td class="p-2 font-semibold text-slate-200">${u.name || u.Name}</td>
+                    <td class="p-2 text-slate-400">${u.email || u.Email}</td>
+                    <td class="p-2 text-amber-400">${u.phone || u.Phone || '-'}</td>
+                    <td class="p-2 text-slate-400 truncate max-w-[100px]">${u.address || u.Address || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAdminContentsList() {
+            const container = document.getElementById('admin-contents-list');
+            if (!container) return;
+
             if (contentsData.length === 0) {
-                adminContentsList.innerHTML = `<p class="text-center text-slate-500 text-xs py-4">Belum ada konten diunggah.</p>`;
-            } else {
-                adminContentsList.innerHTML = contentsData.map(c => `
-                    <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl space-y-1">
-                        <div class="flex justify-between text-[10px]">
-                            <span class="text-amber-400 font-semibold">${c.creatorName} (${c.creatorEmail})</span>
-                            <span class="text-slate-500">${formatDateReadable(c.date)}</span>
-                        </div>
-                        <a href="${c.link}" target="_blank" class="text-xs text-slate-200 hover:underline truncate block">
-                            ${c.link}
-                        </a>
-                        <div class="text-[9px] text-slate-400">
-                            Status: ${c.hasCart ? '<span class="text-amber-400">Keranjang Kuning</span>' : 'Non-Keranjang'}
-                        </div>
-                    </div>
-                `).join('');
+                container.innerHTML = `<div class="text-center py-6 text-xs text-slate-500">Belum ada laporan konten</div>`;
+                return;
             }
+
+            container.innerHTML = contentsData.map(c => `
+                <div class="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 text-xs space-y-1">
+                    <div class="flex justify-between items-center text-[10px]">
+                        <span class="text-amber-400 font-bold">${c.creatorName}</span>
+                        <span class="text-slate-400 font-mono">${formatDateReadable(c.date)}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <a href="${c.link}" target="_blank" class="text-slate-200 hover:underline truncate text-[11px] max-w-[200px]">${c.link}</a>
+                        <span class="text-[9px] px-2 py-0.5 rounded ${c.hasCart ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-700 text-slate-400'}">
+                            ${c.hasCart ? 'Keranjang' : 'Non-Keranjang'}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function populateGasCodeTextarea() {
-            const gasCode = `// KODE GOOGLE APPS SCRIPT (GAS) - BATIK ARIZI CREATOR MANAGEMENT
-// Salin seluruh kode ini ke Apps Script Google Spreadsheet Anda
+            const textarea = document.getElementById('gas-code-textarea');
+            if (!textarea) return;
+
+            const gasCode = `// KODE GOOGLE APPS SCRIPT UNTUK BATIK ARIZI CREATOR TRACKER
+// SPREADSHEET TARGET: https://docs.google.com/spreadsheets/d/15nhvuetas7kx5Ix6uOO-Rj3EcKaK8qwh9SGNZKDdYps/edit?usp=sharing
+const SPREADSHEET_ID = "15nhvuetas7kx5Ix6uOO-Rj3EcKaK8qwh9SGNZKDdYps";
 
 function doGet(e) {
-  var action = e.parameter.action;
-  if (action === "getData") {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    
-    // Fetch Users Sheet
-    var userSheet = ss.getSheetByName("user");
-    var users = [];
-    if (userSheet && userSheet.getLastRow() > 1) {
-      var uValues = userSheet.getRange(2, 1, userSheet.getLastRow() - 1, 8).getValues();
-      users = uValues.map(function(r) {
-        return {
-          id: r[0], name: r[1], dob: r[2], phone: r[3],
-          address: r[4], email: r[5], password: r[6], registeredAt: r[7]
-        };
-      });
-    }
-
-    // Fetch Konten Sheet
-    var contentSheet = ss.getSheetByName("konten");
-    var contents = [];
-    if (contentSheet && contentSheet.getLastRow() > 1) {
-      var cValues = contentSheet.getRange(2, 1, contentSheet.getLastRow() - 1, 7).getValues();
-      contents = cValues.map(function(r) {
-        return {
-          id: r[0], creatorEmail: r[1], creatorName: r[2],
-          link: r[3], date: r[4], hasCart: r[5] === "Ya", createdAt: r[6]
-        };
-      }).reverse(); // Latest first
-    }
-
-    return ContentService.createTextOutput(JSON.stringify({
-      status: "success",
-      users: users,
-      contents: contents
-    })).setMimeType(ContentService.MimeType.JSON);
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  
+  let userSheet = ss.getSheetByName("user");
+  if (!userSheet) {
+    userSheet = ss.insertSheet("user");
+    userSheet.appendRow(["ID", "Name", "DOB", "Phone", "Address", "Email", "Password", "RegisteredAt"]);
   }
+  
+  let contentSheet = ss.getSheetByName("content");
+  if (!contentSheet) {
+    contentSheet = ss.insertSheet("content");
+    contentSheet.appendRow(["ID", "CreatorEmail", "CreatorName", "Link", "Date", "HasCart", "CreatedAt"]);
+  }
+  
+  const users = parseUserData(userSheet);
+  const contents = parseSheetData(contentSheet);
+  
+  return ContentService.createTextOutput(JSON.stringify({
+    status: "success",
+    users: users,
+    contents: contents
+  })).setMimeType(ContentService.MimeType.JSON);
+}
 
-  return ContentService.createTextOutput(JSON.stringify({status: "success", message: "Batik Arizi Web Service Active"}))
-    .setMimeType(ContentService.MimeType.JSON);
+function parseUserData(sheet) {
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  const rows = data.slice(1);
+  
+  return rows.map(row => {
+    return {
+      id: row[0] || ('usr_' + Math.random()),
+      name: row[1] || '',
+      dob: row[2] || '',
+      phone: row[3] || '',
+      address: row[4] || '',
+      email: row[5] || '',
+      password: row[6] || '',
+      registeredAt: row[7] || ''
+    };
+  });
 }
 
 function doPost(e) {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var data = JSON.parse(e.postData.contents);
-  
-  if (data.action === "registerUser") {
-    var sheet = ss.getSheetByName("user") || ss.insertSheet("user");
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(["ID User", "Nama", "Tanggal Lahir", "No WhatsApp", "Alamat", "Email", "Password", "Tanggal Daftar"]);
-    }
-    sheet.appendRow([
-      data.user.id, data.user.name, data.user.dob, data.user.phone,
-      data.user.address, data.user.email, data.user.password, data.user.registeredAt
-    ]);
-    return ContentService.createTextOutput(JSON.stringify({status: "success"})).setMimeType(ContentService.MimeType.JSON);
-  }
-  
-  if (data.action === "addContent") {
-    var sheet = ss.getSheetByName("konten") || ss.insertSheet("konten");
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(["ID Konten", "Email Kreator", "Nama Kreator", "Link Video", "Tanggal Upload", "Keranjang Kuning", "Timestamp"]);
-    }
+  try {
+    const rawData = e.postData ? e.postData.contents : "{}";
+    const data = JSON.parse(rawData);
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     
-    // Check Link Duplication in Spreadsheet
-    var existingLinks = sheet.getRange(2, 4, Math.max(sheet.getLastRow()-1, 1), 1).getValues().flat();
-    if (existingLinks.indexOf(data.content.link) !== -1) {
-      return ContentService.createTextOutput(JSON.stringify({status: "error", message: "Link sudah ada"})).setMimeType(ContentService.MimeType.JSON);
-    }
-    
-    sheet.appendRow([
-      data.content.id, data.content.creatorEmail, data.content.creatorName,
-      data.content.link, data.content.date, data.content.hasCart ? "Ya" : "Tidak", data.content.createdAt
-    ]);
-    return ContentService.createTextOutput(JSON.stringify({status: "success"})).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  if (data.action === "deleteContent") {
-    var sheet = ss.getSheetByName("konten");
-    if (sheet) {
-      var ids = sheet.getRange(2, 1, Math.max(sheet.getLastRow()-1, 1), 1).getValues().flat();
-      var idx = ids.indexOf(data.id);
-      if (idx !== -1) {
-        sheet.deleteRow(idx + 2);
+    if (data.action === "registerUser") {
+      let userSheet = ss.getSheetByName("user");
+      if (!userSheet) {
+        userSheet = ss.insertSheet("user");
+        userSheet.appendRow(["ID", "Name", "DOB", "Phone", "Address", "Email", "Password", "RegisteredAt"]);
       }
+      const u = data.user;
+      userSheet.appendRow([u.id, u.name, u.dob, u.phone, u.address, u.email, u.password, u.registeredAt]);
+      return createJsonResponse({ status: "success", message: "User berhasil didaftarkan" });
     }
-    return ContentService.createTextOutput(JSON.stringify({status: "success"})).setMimeType(ContentService.MimeType.JSON);
+    
+    if (data.action === "addContent") {
+      let contentSheet = ss.getSheetByName("content");
+      if (!contentSheet) {
+        contentSheet = ss.insertSheet("content");
+        contentSheet.appendRow(["ID", "CreatorEmail", "CreatorName", "Link", "Date", "HasCart", "CreatedAt"]);
+      }
+      const c = data.content;
+      contentSheet.appendRow([
+        c.id || ('cnt_' + Date.now()), 
+        c.creatorEmail, 
+        c.creatorName, 
+        c.link, 
+        c.date, 
+        c.hasCart ? "TRUE" : "FALSE", 
+        c.createdAt || new Date().toISOString()
+      ]);
+      return createJsonResponse({ status: "success", message: "Konten berhasil disimpan" });
+    }
+    
+    return createJsonResponse({ status: "error", message: "Action tidak dikenal" });
+  } catch (err) {
+    return createJsonResponse({ status: "error", message: err.toString() });
   }
+}
+
+function parseSheetData(sheet) {
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  const headers = data[0];
+  const rows = data.slice(1);
+  
+  return rows.map(row => {
+    let obj = {};
+    headers.forEach((h, i) => {
+      let val = row[i];
+      if (h === "HasCart") {
+        val = (val === true || val === "TRUE" || val === "true" || val === "1");
+      }
+      const camelKey = h.charAt(0).toLowerCase() + h.slice(1);
+      obj[camelKey] = val;
+    });
+    return obj;
+  });
+}
+
+function createJsonResponse(data) {
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
 }`;
-            document.getElementById('gas-code-textarea').value = gasCode;
+
+            textarea.value = gasCode;
         }
 
         function copyGasCode() {
             const textarea = document.getElementById('gas-code-textarea');
+            if (!textarea) return;
             textarea.select();
             document.execCommand('copy');
-            showToast("Kode GAS berhasil disalin ke clipboard!");
+            showToast("Kode GAS tersalin ke clipboard!");
+        }
+
+        function toggleAuthMode() {
+            const loginForm = document.getElementById('login-form');
+            const regForm = document.getElementById('register-form');
+            const title = document.getElementById('auth-title');
+            const btn = document.getElementById('toggle-auth-btn');
+
+            if (loginForm.classList.contains('hidden')) {
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+                title.innerText = "Masuk Kreator";
+                btn.innerText = "Belum punya akun? Daftar";
+            } else {
+                loginForm.classList.add('hidden');
+                regForm.classList.remove('hidden');
+                title.innerText = "Pendaftaran Kreator Baru";
+                btn.innerText = "Sudah punya akun? Masuk";
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const pin = document.getElementById('reg-admin-pin').value;
+            if (pin !== ADMIN_PIN) {
+                showToast("PIN Pendaftaran Admin salah!", true);
+                return;
+            }
+
+            const email = document.getElementById('reg-email').value;
+            if (usersData.some(u => (u.email || u.Email) === email)) {
+                showToast("Email sudah terdaftar!", true);
+                return;
+            }
+
+            const newUser = {
+                id: 'usr_' + Date.now(),
+                name: document.getElementById('reg-name').value,
+                dob: document.getElementById('reg-dob').value,
+                phone: document.getElementById('reg-phone').value,
+                address: document.getElementById('reg-address').value,
+                email: email,
+                password: document.getElementById('reg-password').value,
+                registeredAt: new Date().toISOString()
+            };
+
+            showSyncModal("Mendaftarkan Kreator", "Menyimpan data ke sheet user...");
+            updateSyncProgress(40, "Mengirim data...");
+
+            const response = await syncToSpreadsheet("registerUser", { user: newUser });
+
+            updateSyncProgress(80, "Menyegarkan data...");
+            await fetchAllDataFromSpreadsheet();
+
+            updateSyncProgress(100, "Tersimpan!");
+            setTimeout(() => {
+                hideSyncModal();
+                showToast("Pendaftaran berhasil! Silakan pilih akun Anda untuk masuk.");
+                toggleAuthMode();
+            }, 300);
+        }
+
+        function formatDateReadable(dateStr) {
+            if (!dateStr) return '--';
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            return `${parts[2]} ${months[parseInt(parts[1], 10) - 1]} ${parts[0]}`;
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = msg;
+            if (isError) {
+                toastIcon.className = "fa-solid fa-circle-xmark text-red-400";
+                toast.classList.remove('border-amber-500/50');
+                toast.classList.add('border-red-500/50');
+            } else {
+                toastIcon.className = "fa-solid fa-circle-check text-amber-400";
+                toast.classList.remove('border-red-500/50');
+                toast.classList.add('border-amber-500/50');
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
         }
     </script>
 </body>
